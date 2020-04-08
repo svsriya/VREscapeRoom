@@ -7,6 +7,10 @@ var moveForward = false;
 var moveBack = false;
 var moveRight = false;
 var moveLeft = false;
+var mouse = new THREE.Vector2();
+var rayray  = new THREE.Raycaster();
+var doorKey;
+var clicked = false;
 
 var prevTime = performance.now();
 var velocity = new THREE.Vector3();
@@ -18,7 +22,9 @@ window.onload = function init()
   // setting the scene
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 100);
-  camera.lookAt( new THREE.Vector3(15,10,20) );
+  
+  //Changed initial position of player
+  camera.lookAt( new THREE.Vector3(0,0,-10) );
   camera.position.z = 3;
 
   renderer = new THREE.WebGLRenderer();
@@ -77,9 +83,25 @@ window.onload = function init()
         break;
     }
   };
+  
+  var onclick = function(event) {
+		controls.lock()
+		if (document.pointerLockElement != null){
+			clicked = true;
+		}
+  }
+  
+  function onmousemove(event) {
+		
+			mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+			mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+	}
 
   document.addEventListener( 'keydown', onKeyDown, false );
   document.addEventListener( 'keyup', onKeyUp, false );
+  document.addEventListener( 'click', onclick, false );
+  document.addEventListener( 'mousemove', onmousemove, false );
 
   raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3(0,-1,0), 0, 10);
 
@@ -133,15 +155,20 @@ window.onload = function init()
   var spotLight = new THREE.SpotLight( 0xff45f6, 10 );
   spotLight.position.set(0, 5, 0);
   scene.add(spotLight);
+  
+  // temp key
+	var doorKeyGeometry = new THREE.SphereGeometry(0.5, 20, 20);
+	var doorKeyMaterial = new THREE.MeshBasicMaterial({color: 0xffff00});
+	doorKey = new THREE.Mesh(doorKeyGeometry, doorKeyMaterial);
+	doorKey.position.set(0, -4, 5);
+	scene.add(doorKey);
 
   GameLoop();
 }
 
 function update()
 {
-  if( controls.isLocked === true )
-  {
-    var time = performance.now();
+	var time = performance.now();
     var delta = (time - prevTime) / 1000;
 
     velocity.x -= velocity.x * 10.0 * delta;
@@ -150,16 +177,25 @@ function update()
 
     direction.z = Number( moveForward ) - Number( moveBack );
     direction.x = Number( moveRight ) - Number( moveLeft );
-    directions.normalize(); // this ensures consistent movements in all directions
+    direction.normalize(); // this ensures consistent movements in all directions
 
     if( moveForward || moveBack ) velocity.z -= direction.z * 400.0 * delta;
     if( moveLeft || moveRight ) velocity.x -= direction.x * 400.0 * delta;
 
     controls.moveRight( -velocity.x * delta );
     controls.moveForward( -velocity.z * delta );
+	
+	rayray.setFromCamera( mouse, camera );
+	var intersects = rayray.intersectObject(doorKey);
+			
+	if (clicked){
+		for ( var i = 0; i < intersects.length; i++ ) {
+			intersects[i].object.position.y = camera.position.y;
+		}
+		clicked = false;
+	}
 
     prevTime = time;
-  }
 }
 
 function render()
