@@ -22,7 +22,7 @@ window.onload = function init()
   // setting the scene
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 100);
-  
+
   //Changed initial position of player
   camera.lookAt( new THREE.Vector3(0,0,-10) );
   camera.position.z = 3;
@@ -83,20 +83,20 @@ window.onload = function init()
         break;
     }
   };
-  
+
   var onclick = function(event) {
 		controls.lock()
 		if (document.pointerLockElement != null){
 			clicked = true;
 		}
-  }
-  
-  function onmousemove(event) {
-		
+  };
+
+  var onmousemove = function (event) {
+
 			mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 			mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
-	}
+	};
 
   document.addEventListener( 'keydown', onKeyDown, false );
   document.addEventListener( 'keyup', onKeyUp, false );
@@ -155,7 +155,7 @@ window.onload = function init()
   var spotLight = new THREE.SpotLight( 0xff45f6, 10 );
   spotLight.position.set(0, 5, 0);
   scene.add(spotLight);
-  
+
   // temp key
 	var doorKeyGeometry = new THREE.SphereGeometry(0.5, 20, 20);
 	var doorKeyMaterial = new THREE.MeshBasicMaterial({color: 0xffff00});
@@ -184,13 +184,15 @@ function update()
 
     controls.moveRight( -velocity.x * delta );
     controls.moveForward( -velocity.z * delta );
-	
+
 	rayray.setFromCamera( mouse, camera );
 	var intersects = rayray.intersectObject(doorKey);
-			
+
 	if (clicked){
 		for ( var i = 0; i < intersects.length; i++ ) {
 			intersects[i].object.position.y = camera.position.y;
+      camera.add(intersects[i].object);
+      intersects[i].object.position.set(2,-2,-5);
 		}
 		clicked = false;
 	}
