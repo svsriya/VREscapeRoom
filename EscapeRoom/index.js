@@ -8,9 +8,10 @@ var moveBack = false;
 var moveRight = false;
 var moveLeft = false;
 var mouse = new THREE.Vector2();
-var rayray  = new THREE.Raycaster();
 var doorKey;
+var door;
 var clicked = false;
+var pickedUp = false;
 
 var prevTime = performance.now();
 var velocity = new THREE.Vector3();
@@ -30,6 +31,8 @@ window.onload = function init()
   renderer = new THREE.WebGLRenderer();
   renderer.setSize( window.innerWidth, window.innerHeight );
   document.body.appendChild( renderer.domElement );
+  
+  //rayray.far = 3.0f;
 
   // add this in case the window is resized
   window.addEventListener( 'resize', function(){
@@ -50,6 +53,7 @@ window.onload = function init()
     switch( event.keyCode )
     {
       case 38: // up arrow key
+		console.log(camera.position.z);
         moveForward = true;
         break;
       case 37:  // left arrow key
@@ -155,6 +159,13 @@ window.onload = function init()
   var spotLight = new THREE.SpotLight( 0xff45f6, 10 );
   spotLight.position.set(0, 5, 0);
   scene.add(spotLight);
+  
+  //door
+  var doorGeometry = new THREE.CubeGeometry(3, 7, 1);
+  var doorMaterial = new THREE.MeshBasicMaterial({ color: 0xcf824e });
+  door = new THREE.Mesh(doorGeometry, doorMaterial);
+  door.position.set(0, -1, -9.75);
+  scene.add(door);
 
   // temp key
 	var doorKeyGeometry = new THREE.SphereGeometry(0.5, 20, 20);
@@ -185,19 +196,42 @@ function update()
     controls.moveRight( -velocity.x * delta );
     controls.moveForward( -velocity.z * delta );
 
+	var rayray  = new THREE.Raycaster();
+	var doorIntersector = new THREE.Raycaster();
 	rayray.setFromCamera( mouse, camera );
+	doorIntersector.setFromCamera( mouse, camera );
 	var intersects = rayray.intersectObject(doorKey);
+	var interspects = doorIntersector.intersectObject(door);
 
 	if (clicked){
-		for ( var i = 0; i < intersects.length; i++ ) {
-			intersects[i].object.position.y = camera.position.y;
-      camera.add(intersects[i].object);
-      intersects[i].object.position.set(2,-2,-5);
+		if (pickedUp){
+			if (interspects.length > 0){
+				win();
+			}
+		} else {
+			for ( var i = 0; i < intersects.length; i++ ) {
+				intersects[i].object.position.y = camera.position.y;
+				camera.add(intersects[i].object);
+				intersects[i].object.position.set(2,-2,-5);
+			}
+			
+			for ( var i = 0; i < interspects.length; i++ ) {
+				interspects[i].object.position.y += 1;
+			}
+			
+			if (intersects.length > 0){
+				pickedUp = true;
+			}
+			
 		}
 		clicked = false;
 	}
 
     prevTime = time;
+}
+
+function win (){
+	console.log("You've escaped");
 }
 
 function render()
