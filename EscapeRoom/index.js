@@ -13,6 +13,8 @@ var door;
 var clicked = false;
 var pickedUp = false;
 
+var winner;
+
 var prevTime = performance.now();
 var velocity = new THREE.Vector3();
 var direction = new THREE.Vector3();
@@ -31,7 +33,7 @@ window.onload = function init()
   renderer = new THREE.WebGLRenderer();
   renderer.setSize( window.innerWidth, window.innerHeight );
   document.body.appendChild( renderer.domElement );
-  
+
   //rayray.far = 3.0f;
 
   // add this in case the window is resized
@@ -45,7 +47,25 @@ window.onload = function init()
 
   // pointer lock controls
   controls = new THREE.PointerLockControls( camera, document.body );
-  scene.add( controls.getObject() )
+
+  var blocker = document.getElementById('blocker');
+  var instructions = document.getElementById('instructions');
+
+  instructions.addEventListener( 'click', function(){
+    controls.lock();
+  }, false);
+
+  controls.addEventListener( 'lock', function(){
+    instructions.style.display = 'none';
+    blocker.style.display = 'none';
+  });
+
+  controls.addEventListener( 'unlock', function(){
+    blocker.style.display = 'block';
+    instructions.style.display = '';
+  });
+
+  scene.add( controls.getObject() );
 
   // this is for checking what key was clicked
   var onKeyDown = function(event){
@@ -89,7 +109,6 @@ window.onload = function init()
   };
 
   var onclick = function(event) {
-		controls.lock()
 		if (document.pointerLockElement != null){
 			clicked = true;
 		}
@@ -159,7 +178,7 @@ window.onload = function init()
   var spotLight = new THREE.SpotLight( 0xff45f6, 10 );
   spotLight.position.set(0, 5, 0);
   scene.add(spotLight);
-  
+
   //door
   var doorGeometry = new THREE.CubeGeometry(3, 7, 1);
   var doorMaterial = new THREE.MeshBasicMaterial({ color: 0xcf824e });
@@ -214,11 +233,15 @@ function update()
 				camera.add(intersects[i].object);
 				intersects[i].object.position.set(2,-2,-5);
 			}
-			
+
+			for ( var i = 0; i < interspects.length; i++ ) {
+				interspects[i].object.position.y += 1;
+			}
+
 			if (intersects.length > 0){
 				pickedUp = true;
 			}
-			
+
 		}
 		clicked = false;
 	}
