@@ -234,10 +234,6 @@ function update()
 				intersects[i].object.position.set(2,-2,-5);
 			}
 
-			for ( var i = 0; i < interspects.length; i++ ) {
-				interspects[i].object.position.y += 1;
-			}
-
 			if (intersects.length > 0){
 				pickedUp = true;
 			}
