@@ -10,8 +10,11 @@ var moveLeft = false;
 var mouse = new THREE.Vector2();
 var doorKey;
 var door;
+// variables for objects the user picks up
 var clicked = false;
 var pickedUp = false;
+var pickedUpObject;
+var objOgLocation = new THREE.Vector3();
 
 var winner;
 
@@ -29,6 +32,7 @@ window.onload = function init()
   //Changed initial position of player
   camera.lookAt( new THREE.Vector3(0,0,-10) );
   camera.position.z = 3;
+  scene.add(camera);
 
   renderer = new THREE.WebGLRenderer();
   renderer.setSize( window.innerWidth, window.innerHeight );
@@ -104,6 +108,16 @@ window.onload = function init()
         break;
       case 39:  // right arrow key
         moveRight = false;
+        break;
+      case 68:  // D key pressed, dropping object
+        if(pickedUp)
+        {
+          camera.remove(pickedUpObject);
+          pickedUpObject.position.set(objOgLocation.x, objOgLocation.y, objOgLocation.z);
+          scene.add(pickedUpObject);
+          console.log(pickedUpObject.position);
+          pickedUp = false;
+        }
         break;
     }
   };
@@ -229,9 +243,13 @@ function update()
 			}
 		} else {
 			for ( var i = 0; i < intersects.length; i++ ) {
-				intersects[i].object.position.y = camera.position.y;
+        objOgLocation.x = intersects[i].object.position.x;
+        objOgLocation.y = intersects[i].object.position.y;
+        objOgLocation.z = intersects[i].object.position.z;
+				// intersects[i].object.position.y = camera.position.y;
 				camera.add(intersects[i].object);
 				intersects[i].object.position.set(2,-2,-5);
+        pickedUpObject = intersects[i].object;
 			}
 
 			if (intersects.length > 0){
