@@ -13,7 +13,8 @@ var door;
 var clicked = false;
 var pickedUp = false;
 
-var winner;
+var winner = false;
+var winScreen = document.getElementById('win');
 
 var prevTime = performance.now();
 var velocity = new THREE.Vector3();
@@ -56,13 +57,21 @@ window.onload = function init()
   }, false);
 
   controls.addEventListener( 'lock', function(){
-    instructions.style.display = 'none';
-    blocker.style.display = 'none';
+    if (!winner){
+		instructions.style.display = 'none';
+		blocker.style.display = 'none';
+		winScreen.style.display = 'none';
+		scene.visible = true;
+	}
   });
 
   controls.addEventListener( 'unlock', function(){
-    blocker.style.display = 'block';
-    instructions.style.display = '';
+	if (!winner){
+		blocker.style.display = 'block';
+		instructions.style.display = '';
+		winScreen.style.display = 'none';
+		scene.visible = false;
+	}
   });
 
   scene.add( controls.getObject() );
@@ -73,16 +82,19 @@ window.onload = function init()
     switch( event.keyCode )
     {
       case 38: // up arrow key
-		console.log(camera.position.z);
+	  case 87: // W key
         moveForward = true;
         break;
       case 37:  // left arrow key
+	  case 65:  // A key
         moveLeft = true;
         break;
       case 40:  // down arrow key
+	  case 83:  // S key
         moveBack = true;
         break;
       case 39:  // right arrow key
+	  case 68:  // D key
         moveRight = true;
         break;
     }
@@ -94,17 +106,30 @@ window.onload = function init()
     switch( event.keyCode )
     {
       case 38: // up arrow key
+	  case 87: // W key
         moveForward = false;
         break;
       case 37:  // left arrow key
+	  case 65:  // A key
         moveLeft = false;
         break;
       case 40:  // down arrow key
+	  case 83:  // S key
         moveBack = false;
         break;
       case 39:  // right arrow key
+	  case 68:  // D key
         moveRight = false;
         break;
+	  case 82:
+		if (winner){
+			winner = false;
+			blocker.style.display = 'none';
+			winScreen.style.display = 'none';
+			controls.lock();
+			scene.visible = true;
+		}
+		break;
     }
   };
 
@@ -115,9 +140,13 @@ window.onload = function init()
   };
 
   var onmousemove = function (event) {
-
+		if (document.pointerLockElement != null){
+			mouse.x = window.innerWidth / 2;
+			mouse.y = window.innerHeight / 2;
+		} else {
 			mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 			mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+		}
 
 	};
 
@@ -193,6 +222,10 @@ window.onload = function init()
 	doorKey.position.set(0, -4, 5);
 	scene.add(doorKey);
 
+  // initial display is only the instructions
+	winScreen.style.display = 'none';
+	scene.visible = false;
+
   GameLoop();
 }
 
@@ -246,7 +279,11 @@ function update()
 }
 
 function win (){
-	console.log("You've escaped");
+	winner = true;
+	blocker.style.display = 'block';
+    winScreen.style.display = '';
+	controls.unlock();
+	scene.visible = false;
 }
 
 function render()
