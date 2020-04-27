@@ -1,16 +1,18 @@
 
 var scene, camera, renderer;
 var controls;
-var objects = [];
+var interactObjs = [];
 var raycaster;
 var moveForward = false;
 var moveBack = false;
 var moveRight = false;
 var moveLeft = false;
 var mouse = new THREE.Vector2();
-var doorKey;
+// interactive objects
+var doorKey, symbolBook, table;
 var door;
 // variables for objects the user picks up
+var pickupable = [];
 var clicked = false;
 var pickedUp = false;
 var pickedUpObject;
@@ -77,7 +79,7 @@ window.onload = function init()
     switch( event.keyCode )
     {
       case 38: // up arrow key
-		console.log(camera.position.z);
+		    console.log(camera.position.z);
         moveForward = true;
         break;
       case 37:  // left arrow key
@@ -185,6 +187,16 @@ window.onload = function init()
   backWallCube.position.z = 10;
   scene.add( backWallCube );
 
+  // symbols painting
+  var loader = new THREE.GLTFLoader();
+  loader.load('./models/symbols_painting/scene.gltf', function(gltf){
+    var symbolPainting = new THREE.Object3D();
+    symbolPainting = gltf.scene;
+    symbolPainting.scale.set(0.1,0.1,0.1);
+    symbolPainting.position.set(-7, 0, 0);
+    scene.add(symbolPainting);
+  })
+
   // lighting
   var ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
   scene.add(ambientLight);
@@ -206,8 +218,31 @@ window.onload = function init()
 	doorKey = new THREE.Mesh(doorKeyGeometry, doorKeyMaterial);
 	doorKey.position.set(0, -4, 5);
 	scene.add(doorKey);
+  interactObjs.push(doorKey);
+  pickupable.push(doorKey);
+
+  // symbolBook
+  loader = new THREE.GLTFLoader();
+  loader.load('./models/book/scene.gltf', function(gltf){
+      symbolBook = new THREE.Object3D();
+      symbolBook = gltf.scene;
+      symbolBook.scale.set(0.5,0.5,0.5);
+      symbolBook.position.set(0, -2, 0);
+      scene.add(symbolBook);
+      interactObjs.push(symbolBook);
+  });
 
   GameLoop();
+}
+
+function containsObj( obj, list )
+{
+  for( var i = 0; i < list.length; i++ )
+  {
+    if( list[i].position == obj.position )
+      return true;
+  }
+  return false;
 }
 
 function update()
@@ -233,7 +268,7 @@ function update()
 	var doorIntersector = new THREE.Raycaster();
 	rayray.setFromCamera( mouse, camera );
 	doorIntersector.setFromCamera( mouse, camera );
-	var intersects = rayray.intersectObject(doorKey);
+	var intersects = rayray.intersectObjects(interactObjs, true);
 	var interspects = doorIntersector.intersectObject(door);
 
 	if (clicked){
@@ -242,19 +277,30 @@ function update()
 				win();
 			}
 		} else {
+      console.log('intersects length: ' + intersects.length);
 			for ( var i = 0; i < intersects.length; i++ ) {
-        objOgLocation.x = intersects[i].object.position.x;
-        objOgLocation.y = intersects[i].object.position.y;
-        objOgLocation.z = intersects[i].object.position.z;
-				// intersects[i].object.position.y = camera.position.y;
-				camera.add(intersects[i].object);
-				intersects[i].object.position.set(2,-2,-5);
-        pickedUpObject = intersects[i].object;
+
+        if( containsObj(intersects[i].object, pickupable) )
+        {
+          objOgLocation.x = intersects[i].object.position.x;
+          objOgLocation.y = intersects[i].object.position.y;
+          objOgLocation.z = intersects[i].object.position.z;
+  				// intersects[i].object.position.y = camera.position.y;
+  				camera.add(intersects[i].object);
+  				intersects[i].object.position.set(2,-2,-5);
+          pickedUpObject = intersects[i].object;
+          pickedUp = true;
+        }
+        else( intersects[i].object.position == symbolBook.position )
+        {
+          console.log("clicked on book");
+        }
+        console.log('intersect object position' + intersects[i].object.position);
 			}
 
-			if (intersects.length > 0){
-				pickedUp = true;
-			}
+			// if (intersects.length > 0){
+			// 	pickedUp = true;
+			// }
 
 		}
 		clicked = false;
