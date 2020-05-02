@@ -159,45 +159,45 @@ window.onload = function init()
 
   // create the empty room
   // floor
-  var floorGeometry = new THREE.CubeGeometry(15, 1, 20);
+  var floorGeometry = new THREE.CubeGeometry(30, 1, 40);
   var floorMaterial = new THREE.MeshBasicMaterial({ color: 0x6f3610, wireframe: false });
   var floorCube = new THREE.Mesh(floorGeometry, floorMaterial);
   floorCube.position.y = -5;
   scene.add( floorCube );
 
   // ceiling
-  var ceilingGeometry = new THREE.CubeGeometry(15, 1, 20);
+  var ceilingGeometry = new THREE.CubeGeometry(30, 1, 40);
   var ceilingMaterial = new THREE.MeshBasicMaterial({ color: 0xdfdfdf, wireframe: false });
   var ceilingCube = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
   ceilingCube.position.y = 5;
   scene.add( ceilingCube );
 
   // left wall
-  var leftWallGeometry = new THREE.CubeGeometry(1, 10, 20);
+  var leftWallGeometry = new THREE.CubeGeometry(1, 10, 40);
   var leftWallMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false });
   var leftWallCube = new THREE.Mesh(leftWallGeometry, leftWallMaterial);
-  leftWallCube.position.x = -8;
+  leftWallCube.position.x = -15;
   scene.add( leftWallCube );
 
   // right wall
-  var rightWallGeometry = new THREE.CubeGeometry(1, 10, 20);
+  var rightWallGeometry = new THREE.CubeGeometry(1, 10, 40);
   var rightWallMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false });
   var rightWallCube = new THREE.Mesh(rightWallGeometry, rightWallMaterial);
-  rightWallCube.position.x = 8;
+  rightWallCube.position.x = 15;
   scene.add( rightWallCube );
 
   // front wall
-  var frontWallGeometry = new THREE.CubeGeometry(15, 10, 1);
+  var frontWallGeometry = new THREE.CubeGeometry(30, 10, 1);
   var frontWallMaterial = new THREE.MeshBasicMaterial({ color: 0xfdfdfd, wireframe: false });
   var frontWallCube = new THREE.Mesh(frontWallGeometry, frontWallMaterial);
-  frontWallCube.position.z = -10;
+  frontWallCube.position.z = -20;
   scene.add( frontWallCube );
 
   // back wall
-  var backWallGeometry = new THREE.CubeGeometry(15, 10, 1);
+  var backWallGeometry = new THREE.CubeGeometry(30, 10, 1);
   var backWallMaterial = new THREE.MeshBasicMaterial({ color: 0xfdfdfd, wireframe: false });
   var backWallCube = new THREE.Mesh(backWallGeometry, backWallMaterial);
-  backWallCube.position.z = 10;
+  backWallCube.position.z = 20;
   scene.add( backWallCube );
 
   // lighting
