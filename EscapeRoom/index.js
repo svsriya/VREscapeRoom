@@ -140,13 +140,13 @@ window.onload = function init()
   };
 
   var onmousemove = function (event) {
-		if (document.pointerLockElement != null){
+		/*if (document.pointerLockElement != null){
 			mouse.x = window.innerWidth / 2;
 			mouse.y = window.innerHeight / 2;
-		} else {
+		} else {*/
 			mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 			mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-		}
+		/*}*/
 
 	};
 
@@ -156,15 +156,25 @@ window.onload = function init()
   document.addEventListener( 'mousemove', onmousemove, false );
 
   raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3(0,-1,0), 0, 10);
-  var objloader = new THREE.ObjectLoader();
+  
+  /*var objloader = new THREE.GLTFLoader();
   var niceDoor;
   
-  objloader.load("models/json/door.json", function(obj){
+  objloader.load("models/json/door.json", function(gltf){
 	  niceDoor = new THREE.Object3D();
 	  niceDoor.postion.set(0, -1, -9.75);
 	  scene.add(niceDoor);
-  });
+  });*/
+  
   // create the empty room
+  //camera target
+  var targetGeometry = new THREE.RingGeometry(0.1,0.2,18);
+  var targetMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: false });
+  var target = new THREE.Mesh(targetGeometry, targetMaterial);
+  scene.add(target);
+  camera.add(target);
+  target.position.set(0,0,-5);
+  
   // floor
   var floorGeometry = new THREE.CubeGeometry(30, 1, 40);
   var floorMaterial = new THREE.MeshBasicMaterial({ color: 0x6f3610, wireframe: false });
