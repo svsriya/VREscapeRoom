@@ -156,7 +156,14 @@ window.onload = function init()
   document.addEventListener( 'mousemove', onmousemove, false );
 
   raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3(0,-1,0), 0, 10);
-
+  var objloader = new THREE.ObjectLoader();
+  var niceDoor;
+  
+  objloader.load("models/json/door.json", function(obj){
+	  niceDoor = new THREE.Object3D();
+	  niceDoor.postion.set(0, -1, -9.75);
+	  scene.add(niceDoor);
+  });
   // create the empty room
   // floor
   var floorGeometry = new THREE.CubeGeometry(30, 1, 40);
