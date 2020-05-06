@@ -9,10 +9,14 @@ var moveLeft = false;
 var mouse = new THREE.Vector2();
 // interactive objects
 var interactObjs = [];
-var doorKey, symbolBook;
+var symbolBook;
 var door;
+var lamp;
+var lightsOn = [];
+var lightPuzzleSolved = false;
 // variables for objects the user picks up
 var pickupable = [];
+var doorKey;
 var clicked = false;
 var pickedUp = false;
 var pickedUpObject;
@@ -114,7 +118,7 @@ window.onload = function init()
       case 68:  // D key pressed, dropping object
         if(pickedUp)
         {
-          // set object to its original location 
+          // set object to its original location
           camera.remove(pickedUpObject);
           pickedUpObject.position.set(objOgLocation.x, objOgLocation.y, objOgLocation.z);
           scene.add(pickedUpObject);
@@ -189,12 +193,25 @@ window.onload = function init()
   scene.add( backWallCube );
 
   // lighting
-  var ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+  var ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
   scene.add(ambientLight);
-
-  var spotLight = new THREE.SpotLight( 0xffffff, 10 );
-  spotLight.position.set(0, 5, 0);
-  scene.add(spotLight);
+  var spotLight1 = new THREE.SpotLight( 0xffffff, 100, 10 );
+  spotLight1.position.set(0, 3, 0);
+  scene.add(spotLight1);
+  // var helper = new THREE.PointLightHelper( spotLight1 );
+  // scene.add(helper);
+  var light1 = new THREE.PointLight( 0xffffff, 4, 10 );
+  light1.position.set(4, -2, 18);
+  scene.add( light1 );
+  var light2 = new THREE.PointLight( 0xffffff, 4, 10 );
+  light2.position.set(-0.5, -2, 18);
+  scene.add( light2 );
+  var light3 = new THREE.PointLight( 0xffffff, 4, 10 );
+  light3.position.set(-5, -2, 18);
+  scene.add( light3 );
+  var light4 = new THREE.PointLight( 0xffffff, 4, 10 );
+  light4.position.set(-9.5, -2, 18);
+  scene.add( light4 );
 
   // symbols painting
   var loader = new THREE.GLTFLoader();
@@ -208,6 +225,7 @@ window.onload = function init()
 
   // desks
   var desks = new THREE.Object3D();
+  desks.deskList = [];
   loader.load('./models/computerdesk/scene.gltf', function(gltf){
     var desk = new THREE.Object3D();
     desk = gltf.scene;
@@ -217,6 +235,7 @@ window.onload = function init()
       var cloneDesk = desk.clone();
       cloneDesk.position.set(4-i*4.5,-4.5,18.8);
       desks.add(cloneDesk);
+      desks.deskList.push(cloneDesk);
     }
   });
   scene.add(desks);
@@ -241,6 +260,17 @@ window.onload = function init()
   });
   scene.add(chairs);
 
+  // symbolBook
+  loader.load('./models/book/scene.gltf', function(gltf){
+      symbolBook = new THREE.Object3D();
+      symbolBook = gltf.scene;
+      symbolBook.scale.set(0.5,0.5,0.5);
+      symbolBook.position.set(10, -2, 0);
+      symbolBook.name = 'symbolBook';
+      scene.add(symbolBook);
+      interactObjs.push(symbolBook);
+  });
+
   //door
   var doorGeometry = new THREE.CubeGeometry(3, 7, 1);
   var doorMaterial = new THREE.MeshBasicMaterial({ color: 0xcf824e });
@@ -253,18 +283,39 @@ window.onload = function init()
 	var doorKeyMaterial = new THREE.MeshBasicMaterial({color: 0xffff00});
 	doorKey = new THREE.Mesh(doorKeyGeometry, doorKeyMaterial);
 	doorKey.position.set(0, -4, 5);
+  doorKey.name = 'doorKey';
 	scene.add(doorKey);
   interactObjs.push(doorKey);
   pickupable.push(doorKey);
 
-  // symbolBook
-  loader.load('./models/book/scene.gltf', function(gltf){
-      symbolBook = new THREE.Object3D();
-      symbolBook = gltf.scene;
-      symbolBook.scale.set(0.5,0.5,0.5);
-      symbolBook.position.set(10, -2, 0);
-      scene.add(symbolBook);
-      interactObjs.push(symbolBook);
+  // desk lamps and lights
+  loader.load('./models/desk_lamp/scene.gltf', function(gltf){
+    lamp = new THREE.Object3D();
+    lamp = gltf.scene;
+    lamp.scale.set(0.5,0.5,0.5);
+    var lightColors = [0x00ff00, 0xff0000, 0x0000ff, 0xffff00];
+    for( var i = 0; i < 4; i++ )
+    {
+      var lampClone = lamp.clone();
+      lampClone.position.set(5-i*4.5,-2,18.8);
+      lampClone.name = 'lamp' + (i+1);
+      lampClone.turnedOn = false;
+      // orient lamp
+      var newDir = new THREE.Vector3(1,0,-1);
+      var pos = new THREE.Vector3();
+      pos.addVectors(newDir, lampClone.position);
+      lampClone.lookAt(pos);
+      interactObjs.push(lampClone);
+      scene.add(lampClone);
+      // desks directional lights
+      var pl = new THREE.PointLight(lightColors[i], 10, 1, 2);
+      pl.intensity = 0;
+      pl.position.set(0.5,1,0);
+      lampClone.add(pl);
+      lampClone.light = pl;
+      //var helper = new THREE.PointLightHelper( d1, 1 );
+      //scene.add(helper);
+    }
   });
 
   GameLoop();
@@ -275,10 +326,18 @@ function containsObj( obj, list )
 {
   for( var i = 0; i < list.length; i++ )
   {
-    if( list[i].position == obj.position )
+    if( list[i].name == obj.name )
       return true;
   }
   return false;
+}
+
+// finds the senior most parent of the object (ie the whole model rather than its parts)
+function getAncestor(obj)
+{
+  while( !containsObj(obj, interactObjs) )
+    obj = obj.parent;
+  return obj;
 }
 
 function update()
@@ -314,6 +373,68 @@ function update()
 			}
 		} else {
       console.log('intersects length: ' + intersects.length);
+      // check if a gltf model was selected
+      if(intersects.length > 1)
+      {
+        var obj = intersects[0].object;
+        obj = getAncestor(obj);
+        console.log('object selected: ' + obj.name);
+
+        // LAMP PUZZLE interaction for the lamps (turning on and off)
+        if( obj.name.startsWith('lamp') )
+        {
+          // flip the lamp's switch
+          obj.turnedOn = !obj.turnedOn;
+          console.log('light on: ' + obj.turnedOn );
+          if( obj.turnedOn ){
+            // add to list of lights turned on
+            lightsOn.push(obj);
+            // blue light is kinda weak, so it needs more intensity
+            if(obj.name == 'lamp3')
+              obj.light.intensity = 100;
+            else
+              obj.light.intensity = 10
+          }
+          else {
+            // check if lights need to be reset
+            if( lightsOn.length == 4 )
+            {
+              // reset the puzzle and turn off lights
+              lightsOn.forEach(l => {l.light.intensity = 0;l.turnedOn=false;});
+              lightsOn = [];
+            }
+            else
+            {
+              // remove from list of lights turned on
+              lightsOn = lightsOn.filter(function(l){
+                if( l != obj ) return l;
+              });
+              obj.light.intensity = 0;
+            }
+          }
+          // check if the puzzle has been solved
+          if( lightsOn.length == 4 && !lightPuzzleSolved )
+          {
+            var correctOrder = ['lamp4','lamp2','lamp3','lamp1'];
+            var solved = true;
+            for( var i = 0; i < 4; i++ )
+            {
+              if( lightsOn[i].name != correctOrder[i] )
+                solved = false;
+            }
+            if(solved)
+            {
+              console.log('lights puzzle solved!!');
+              lightPuzzleSolved = true;
+            }
+            else
+            {
+              console.log('incorrect order, click to reset');
+            }
+          }
+        }
+      }
+
 			for ( var i = 0; i < intersects.length; i++ ) {
         // check if the object in the raycaster is pickupable, and if so pick it up
         // TODO make sure user can't try to pick up something when already holding something
@@ -330,12 +451,7 @@ function update()
           pickedUpObject = intersects[i].object;
           pickedUp = true;
         }
-        // temp for checking interaction with book
-        else( intersects[i].object.position == symbolBook.position )
-        {
-          console.log("clicked on book");
-        }
-        console.log('intersect object position' + intersects[i].object.position);
+        //console.log('intersect object position' + intersects[i].object.position);
 			}
 
 			// if (intersects.length > 0){
