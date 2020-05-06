@@ -158,63 +158,139 @@ window.onload = function init()
   raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3(0,-1,0), 0, 10);
   
   var loader = new THREE.GLTFLoader();
-  var battery = new THREE.Object3D();
-  var bookshelfR, bookshelfT, bookshelfP, bookshelfB, bookshelfLB, bookshelfG;
-  var niceKey = new THREE.Object3D();
+  var bookshelfT, bookshelfP, bookshelfLB, bookshelfG;
   
   loader.load('./models/battery.gltf', function(gltf){
+	  var battery = new THREE.Object3D();
 	  battery = gltf.scene;
-	  battery.postion.set(0, -1, -9.75);
+	  battery.scale.set(0.25, 0.25, 0.25);
+	  battery.position.set(0, -4, 0);
 	  scene.add(battery);
   });
   
-  loader.load('./models/bookshelves/bookshelf_red.gltf', function(gltf){
-	  bookshelfR = new THREE.Object3D();
+  //battery.scale.set(0.5, 0.5, 0.5);
+  //battery.position.set(0, -5, 0);
+  
+  /*loader.load('./models/bookshelves/bookshelf_red.gltf', function(gltf){
+	  var bookshelfR = new THREE.Object3D();
 	  bookshelfR = gltf.scene;
-	  bookshelfR.postion.set(0, -1, 10);
+	  bookshelfR.postion.set(0, -5, 10);
 	  scene.add(bookshelfR);
+  });*/
+  
+  loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
+	  var bookshelfB = new THREE.Object3D();
+	  bookshelfB = gltf.scene;
+	  bookshelfB.position.set(-13.75, -4, 5);
+	  bookshelfB.scale.set(0.65, 0.65, 0.65);
+	  bookshelfB.rotation.y = Math.PI / 2;
+	  scene.add(bookshelfB);
+  });
+  loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
+	  var bookshelfB = new THREE.Object3D();
+	  bookshelfB = gltf.scene;
+	  bookshelfB.position.set(-13.75, -4, -5);
+	  bookshelfB.scale.set(0.65, 0.65, 0.65);
+	  bookshelfB.rotation.y = Math.PI / 2;
+	  scene.add(bookshelfB);
   });
   
-  loader.load('./models/bookshelves/bookshelf_blue.gltf', function(gltf){
+  loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
+	  var bookshelfB = new THREE.Object3D();
+	  bookshelfB = gltf.scene;
+	  bookshelfB.position.set(-13.75, -4, 2);
+	  bookshelfB.scale.set(0.65, 0.65, 0.65);
+	  bookshelfB.rotation.y = Math.PI / 2;
+	  scene.add(bookshelfB);
+  });
+  
+  loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
+	  var bookshelfB = new THREE.Object3D();
+	  bookshelfB = gltf.scene;
+	  bookshelfB.position.set(-13.75, -4, -2);
+	  bookshelfB.scale.set(0.65, 0.65, 0.65);
+	  bookshelfB.rotation.y = Math.PI / 2;
+	  scene.add(bookshelfB);
+  });
+  
+  loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
+	  var bookshelfB = new THREE.Object3D();
+	  bookshelfB = gltf.scene;
+	  bookshelfB.position.set(13.75, -4, 5);
+	  bookshelfB.scale.set(0.65, 0.65, 0.65);
+	  bookshelfB.rotation.y = -Math.PI / 2;
+	  scene.add(bookshelfB);
+  });
+  loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
+	  var bookshelfB = new THREE.Object3D();
+	  bookshelfB = gltf.scene;
+	  bookshelfB.position.set(13.75, -4, -5);
+	  bookshelfB.scale.set(0.65, 0.65, 0.65);
+	  bookshelfB.rotation.y = -Math.PI / 2;
+	  scene.add(bookshelfB);
+  });
+  
+  loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
+	  var bookshelfB = new THREE.Object3D();
+	  bookshelfB = gltf.scene;
+	  bookshelfB.position.set(13.75, -4, 2);
+	  bookshelfB.scale.set(0.65, 0.65, 0.65);
+	  bookshelfB.rotation.y = -Math.PI / 2;
+	  scene.add(bookshelfB);
+  });
+  
+  loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
+	  var bookshelfB = new THREE.Object3D();
+	  bookshelfB = gltf.scene;
+	  bookshelfB.position.set(13.75, -4, -2);
+	  bookshelfB.scale.set(0.65, 0.65, 0.65);
+	  bookshelfB.rotation.y = -Math.PI / 2;
+	  scene.add(bookshelfB);
+  });
+  
+  /*loader.load('./models/bookshelves/bookshelf_blue.gltf', function(gltf){
 	  bookshelfLB = new THREE.Object3D();
 	  bookshelfLB = gltf.scene;
-	  bookshelfLB.postion.set(0, -1, 10);
+	 // bookshelfLB.postion.set(0, -1, 10);
 	  scene.add(bookshelfLB);
   });
   
   loader.load('./models/bookshelves/bookshelf_purple.gltf', function(gltf){
 	  bookshelfP = new THREE.Object3D();
 	  bookshelfP = gltf.scene;
-	  bookshelfP.postion.set(0, -1, 10);
+	//  bookshelfP.postion.set(0, -1, 10);
 	  scene.add(bookshelfP);
   });
   
   loader.load('./models/bookshelves/bookshelf_green.gltf', function(gltf){
 	  bookshelfG = new THREE.Object3D();
 	  bookshelfG = gltf.scene;
-	  bookshelfG.postion.set(0, -1, 10);
+	 // bookshelfG.postion.set(0, -1, 10);
 	  scene.add(bookshelfG);
   });
   
   loader.load('./models/bookshelves/bookshelf_turquiouse.gltf', function(gltf){
 	  bookshelfT = new THREE.Object3D();
 	  bookshelfT = gltf.scene;
-	  bookshelfT.postion.set(0, -1, 10);
+	//  bookshelfT.postion.set(0, -1, 10);
 	  scene.add(bookshelfT);
-  });
+  });*/
   
   loader.load('./models/low-poly-key.gltf', function(gltf){
+	  var niceKey = new THREE.Object3D();
 	  niceKey = gltf.scene;
-	  niceKey.postion.set(0, -1, 10);
+	  niceKey.scale.set(0.002, 0.002, 0.002);
+	  niceKey.position.set(0, -4, 10);
 	  scene.add(niceKey);
   });
- /* var niceDoor;
-  
-  objloader.load("models/door.json", function(gltf){
+ 
+  loader.load("models/door.gltf", function(gltf){
+	  var niceDoor = new THREE.Object3D();
 	  niceDoor = new THREE.Object3D();
-	  niceDoor.postion.set(0, -1, -9.75);
+	 // niceDoor.position.set(0, -1, -12);
+	  niceDoor.scale.set(1000, 1000, 1000);
 	  scene.add(niceDoor);
-  });*/
+  });
   
   // create the empty room
   //camera target
