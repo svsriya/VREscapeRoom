@@ -154,13 +154,65 @@ window.onload = function init()
   document.addEventListener( 'keyup', onKeyUp, false );
   document.addEventListener( 'click', onclick, false );
   document.addEventListener( 'mousemove', onmousemove, false );
+  
+  console.log("There was an edit");
 
   raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3(0,-1,0), 0, 10);
   
-  /*var objloader = new THREE.GLTFLoader();
-  var niceDoor;
+  var loader = new THREE.GLTFLoader();
+  var battery = new THREE.Object3D();
+  var bookshelfR, bookshelfT, bookshelfP, bookshelfB, bookshelfLB, bookshelfG;
+  var niceKey = new THREE.Object3D();
   
-  objloader.load("models/json/door.json", function(gltf){
+  loader.load('./models/battery.gltf', function(gltf){
+	  battery = gltf.scene;
+	  battery.postion.set(0, -1, -9.75);
+	  scene.add(battery);
+  });
+  
+  loader.load('./models/bookshelves/bookshelf_red.gltf', function(gltf){
+	  bookshelfR = new THREE.Object3D();
+	  bookshelfR = gltf.scene;
+	  bookshelfR.postion.set(0, -1, 10);
+	  scene.add(bookshelfR);
+  });
+  
+  loader.load('./models/bookshelves/bookshelf_blue.gltf', function(gltf){
+	  bookshelfLB = new THREE.Object3D();
+	  bookshelfLB = gltf.scene;
+	  bookshelfLB.postion.set(0, -1, 10);
+	  scene.add(bookshelfLB);
+  });
+  
+  loader.load('./models/bookshelves/bookshelf_purple.gltf', function(gltf){
+	  bookshelfP = new THREE.Object3D();
+	  bookshelfP = gltf.scene;
+	  bookshelfP.postion.set(0, -1, 10);
+	  scene.add(bookshelfP);
+  });
+  
+  loader.load('./models/bookshelves/bookshelf_green.gltf', function(gltf){
+	  bookshelfG = new THREE.Object3D();
+	  bookshelfG = gltf.scene;
+	  bookshelfG.postion.set(0, -1, 10);
+	  scene.add(bookshelfG);
+  });
+  
+  loader.load('./models/bookshelves/bookshelf_turquiouse.gltf', function(gltf){
+	  bookshelfT = new THREE.Object3D();
+	  bookshelfT = gltf.scene;
+	  bookshelfT.postion.set(0, -1, 10);
+	  scene.add(bookshelfT);
+  });
+  
+  loader.load('./models/low-poly-key.gltf', function(gltf){
+	  niceKey = gltf.scene;
+	  niceKey.postion.set(0, -1, 10);
+	  scene.add(niceKey);
+  });
+ /* var niceDoor;
+  
+  objloader.load("models/door.json", function(gltf){
 	  niceDoor = new THREE.Object3D();
 	  niceDoor.postion.set(0, -1, -9.75);
 	  scene.add(niceDoor);
