@@ -154,8 +154,6 @@ window.onload = function init()
   document.addEventListener( 'keyup', onKeyUp, false );
   document.addEventListener( 'click', onclick, false );
   document.addEventListener( 'mousemove', onmousemove, false );
-  
-  console.log("There was an edit");
 
   raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3(0,-1,0), 0, 10);
   
