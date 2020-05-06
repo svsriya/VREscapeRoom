@@ -14,6 +14,7 @@ var door;
 var lamp;
 var lightsOn = [];
 var lightPuzzleSolved = false;
+var desks;
 // variables for objects the user picks up
 var pickupable = [];
 var doorKey;
@@ -224,7 +225,7 @@ window.onload = function init()
   });
 
   // desks
-  var desks = new THREE.Object3D();
+  desks = new THREE.Object3D();
   desks.deskList = [];
   loader.load('./models/computerdesk/scene.gltf', function(gltf){
     var desk = new THREE.Object3D();
@@ -426,6 +427,14 @@ function update()
             {
               console.log('lights puzzle solved!!');
               lightPuzzleSolved = true;
+              // display the number
+              var geometry = new THREE.PlaneGeometry(0.5,0.5);
+              var texture = new THREE.TextureLoader().load('./models/computerdesk/computerscreen.jpg');
+              var material1 = new THREE.MeshBasicMaterial( {map: texture, color:0xffffff} );
+              var compScreen = new THREE.Mesh(geometry, material1);
+              compScreen.position.set(4.05,-1.45,18.62);
+              compScreen.rotateY(Math.PI);
+              scene.add(compScreen);
             }
             else
             {
