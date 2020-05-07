@@ -453,6 +453,13 @@ function init()
 	  interactObjs.push(niceKey);
 	  pickupable.push(niceKey);
   });
+  
+  loader.load('./models/puzzle_map/puzzle_map.gltf', function(gltf){
+	  var map = new THREE.Object3D();
+	  //map.position.set(0, 0, 8);
+	  //map.scale.set(5, 5, 5);
+	  scene.add(map);
+  });
 
   //door
   var doorGeometry = new THREE.CubeGeometry(3, 7, 1);
