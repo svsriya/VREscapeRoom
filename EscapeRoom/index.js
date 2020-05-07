@@ -9,11 +9,12 @@ var moveLeft = false;
 var mouse = new THREE.Vector2();
 // interactive objects
 var interactObjs = [];
-var symbolBook;
 var door;
 var lamp;
 var lightsOn = [];
 var lightPuzzleSolved = false;
+var bookClickedOn = false;
+var bookpage;
 var desks;
 // variables for objects the user picks up
 var pickupable = [];
@@ -81,21 +82,24 @@ window.onload = function init()
   // this is for checking what key was clicked
   var onKeyDown = function(event){
 
-    switch( event.keyCode )
+    if(!bookClickedOn)
     {
-      case 38: // up arrow key
-		    console.log(camera.position.z);
-        moveForward = true;
-        break;
-      case 37:  // left arrow key
-        moveLeft = true;
-        break;
-      case 40:  // down arrow key
-        moveBack = true;
-        break;
-      case 39:  // right arrow key
-        moveRight = true;
-        break;
+      switch( event.keyCode )
+      {
+        case 38: // up arrow key
+  		    console.log(camera.position.z);
+          moveForward = true;
+          break;
+        case 37:  // left arrow key
+          moveLeft = true;
+          break;
+        case 40:  // down arrow key
+          moveBack = true;
+          break;
+        case 39:  // right arrow key
+          moveRight = true;
+          break;
+      }
     }
   };
 
@@ -126,6 +130,11 @@ window.onload = function init()
           console.log(pickedUpObject.position);
           pickedUp = false;
         }
+        else if(bookClickedOn)
+        {
+          bookClickedOn = false;
+          camera.remove(bookpage);
+        }
         break;
     }
   };
@@ -137,10 +146,8 @@ window.onload = function init()
   };
 
   var onmousemove = function (event) {
-
-			mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+      mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 			mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-
 	};
 
   document.addEventListener( 'keydown', onKeyDown, false );
@@ -252,24 +259,37 @@ window.onload = function init()
       var cloneChair = chair.clone();
       cloneChair.position.set(4-i*4.5, -1.7, 18);
       // orient chair correctly
-      var newDir = new THREE.Vector3(-1,0,0);
-      var pos = new THREE.Vector3();
-      pos.addVectors(newDir, cloneChair.position);
-      cloneChair.lookAt(pos);
+      cloneChair.rotation.y = -Math.PI/2;
       chairs.add(cloneChair);
     }
   });
   scene.add(chairs);
 
+  // book table
+  var bookTable = new THREE.Object3D();
+  loader.load('./models/table/scene.gltf', function(gltf){
+    bookTable = gltf.scene;
+    bookTable.position.set(9,-5,0);
+    bookTable.scale.set(3, 3, 3);
+    bookTable.rotation.y = Math.PI/2;
+    scene.add(bookTable);
+  });
+
   // symbolBook
   loader.load('./models/book/scene.gltf', function(gltf){
-      symbolBook = new THREE.Object3D();
+      var symbolBook = new THREE.Object3D();
       symbolBook = gltf.scene;
-      symbolBook.scale.set(0.5,0.5,0.5);
-      symbolBook.position.set(10, -2, 0);
+      symbolBook.scale.set(0.3,0.3,0.3);
+      symbolBook.position.set(9, -2.5, 0);
+      symbolBook.rotation.y = Math.PI/2;
       symbolBook.name = 'symbolBook';
       scene.add(symbolBook);
       interactObjs.push(symbolBook);
+      var lightBook = symbolBook.clone();
+      lightBook.position.set(9, -2.5, 2);
+      lightBook.name = 'lightBook';
+      scene.add(lightBook);
+      interactObjs.push(lightBook);
   });
 
   //door
@@ -372,7 +392,7 @@ function update()
 			if (interspects.length > 0){
 				win();
 			}
-		} else {
+		} else if(!bookClickedOn) {
       console.log('intersects length: ' + intersects.length);
       // check if a gltf model was selected
       if(intersects.length > 1)
@@ -440,6 +460,18 @@ function update()
             {
               console.log('incorrect order, click to reset');
             }
+          }
+        }
+        else if( obj.name.endsWith('Book') )
+        {
+          if(!bookClickedOn)
+          {
+            bookClickedOn = true;
+            var material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( "images/" + obj.name+".jpeg" ), color: 0xffffff } );
+            bookpage = new THREE.Sprite( material );
+            camera.add( bookpage );
+            bookpage.position.set(0,0,-1);
+            console.log('clicked on book');
           }
         }
       }
