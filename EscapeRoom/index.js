@@ -555,7 +555,7 @@ function update()
 	var doorIntersector = new THREE.Raycaster();
 	rayray.setFromCamera( mouse, camera );
 	doorIntersector.setFromCamera( mouse, camera );
-	var intersects = rayray.intersectObject(doorKey);
+	var intersects = rayray.intersectObjects(interactObjs, true);
 	var interspects = doorIntersector.intersectObject(door);
 
 	if (clicked){
