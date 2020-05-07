@@ -342,7 +342,7 @@ function init()
   loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
 	  var bookshelfB = new THREE.Object3D();
 	  bookshelfB = gltf.scene;
-	  bookshelfB.position.set(-13.75, -4, 5);
+	  bookshelfB.position.set(-13.75, -4.5, 10);
 	  bookshelfB.scale.set(0.65, 0.65, 0.65);
 	  bookshelfB.rotation.y = Math.PI / 2;
 	  scene.add(bookshelfB);
@@ -350,16 +350,7 @@ function init()
   loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
 	  var bookshelfB = new THREE.Object3D();
 	  bookshelfB = gltf.scene;
-	  bookshelfB.position.set(-13.75, -4, -5);
-	  bookshelfB.scale.set(0.65, 0.65, 0.65);
-	  bookshelfB.rotation.y = Math.PI / 2;
-	  scene.add(bookshelfB);
-  });
-  
-  loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
-	  var bookshelfB = new THREE.Object3D();
-	  bookshelfB = gltf.scene;
-	  bookshelfB.position.set(-13.75, -4, 2);
+	  bookshelfB.position.set(-13.75, -4.5, -10);
 	  bookshelfB.scale.set(0.65, 0.65, 0.65);
 	  bookshelfB.rotation.y = Math.PI / 2;
 	  scene.add(bookshelfB);
@@ -368,7 +359,7 @@ function init()
   loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
 	  var bookshelfB = new THREE.Object3D();
 	  bookshelfB = gltf.scene;
-	  bookshelfB.position.set(-13.75, -4, -2);
+	  bookshelfB.position.set(-13.75, -4.5, 7);
 	  bookshelfB.scale.set(0.65, 0.65, 0.65);
 	  bookshelfB.rotation.y = Math.PI / 2;
 	  scene.add(bookshelfB);
@@ -377,7 +368,16 @@ function init()
   loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
 	  var bookshelfB = new THREE.Object3D();
 	  bookshelfB = gltf.scene;
-	  bookshelfB.position.set(13.75, -4, 5);
+	  bookshelfB.position.set(-13.75, -4.5, -7);
+	  bookshelfB.scale.set(0.65, 0.65, 0.65);
+	  bookshelfB.rotation.y = Math.PI / 2;
+	  scene.add(bookshelfB);
+  });
+  
+  loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
+	  var bookshelfB = new THREE.Object3D();
+	  bookshelfB = gltf.scene;
+	  bookshelfB.position.set(13.75, -4.5, 10);
 	  bookshelfB.scale.set(0.65, 0.65, 0.65);
 	  bookshelfB.rotation.y = -Math.PI / 2;
 	  scene.add(bookshelfB);
@@ -385,16 +385,7 @@ function init()
   loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
 	  var bookshelfB = new THREE.Object3D();
 	  bookshelfB = gltf.scene;
-	  bookshelfB.position.set(13.75, -4, -5);
-	  bookshelfB.scale.set(0.65, 0.65, 0.65);
-	  bookshelfB.rotation.y = -Math.PI / 2;
-	  scene.add(bookshelfB);
-  });
-  
-  loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
-	  var bookshelfB = new THREE.Object3D();
-	  bookshelfB = gltf.scene;
-	  bookshelfB.position.set(13.75, -4, 2);
+	  bookshelfB.position.set(13.75, -4.5, -10);
 	  bookshelfB.scale.set(0.65, 0.65, 0.65);
 	  bookshelfB.rotation.y = -Math.PI / 2;
 	  scene.add(bookshelfB);
@@ -403,7 +394,16 @@ function init()
   loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
 	  var bookshelfB = new THREE.Object3D();
 	  bookshelfB = gltf.scene;
-	  bookshelfB.position.set(13.75, -4, -2);
+	  bookshelfB.position.set(13.75, -4.5, 7);
+	  bookshelfB.scale.set(0.65, 0.65, 0.65);
+	  bookshelfB.rotation.y = -Math.PI / 2;
+	  scene.add(bookshelfB);
+  });
+  
+  loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
+	  var bookshelfB = new THREE.Object3D();
+	  bookshelfB = gltf.scene;
+	  bookshelfB.position.set(13.75, -4.5, -7);
 	  bookshelfB.scale.set(0.65, 0.65, 0.65);
 	  bookshelfB.rotation.y = -Math.PI / 2;
 	  scene.add(bookshelfB);
