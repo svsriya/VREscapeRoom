@@ -253,8 +253,30 @@ function init()
   light4.position.set(-9.5, -2, 18);
   scene.add( light4 );
   
+  var manager = new THREE.LoadingManager();
+  manager.onStart = function ( url) {
+	  console.log( 'Started loading file: ' + url);
+  };
+  
+  manager.onLoad = function ( ) {
+
+	console.log( 'Loading complete!');
+   };
+   
+   manager.onProgress = function ( url, itemsLoaded, itemsTotal ) {
+
+	console.log( 'Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
+
+   };
+   
+   manager.onError = function ( url, itemsLoaded, itemsTotal ) {
+
+	console.log( 'Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
+
+   };
+  
   // symbols painting
-  var loader = new THREE.GLTFLoader();
+  var loader = new THREE.GLTFLoader(manager);
   loader.load('./models/symbols_painting/scene.gltf', function(gltf){
     var symbolPainting = new THREE.Object3D();
     symbolPainting = gltf.scene;
@@ -439,11 +461,13 @@ function init()
   
   loader.load("models/door.gltf", function(gltf){
 	  var niceDoor = new THREE.Object3D();
-	 // niceDoor.position.set(0, -1, -12);
-	  niceDoor.scale.set(100, 100, 100);
+	  niceDoor = gltf.scene;
+	  niceDoor.position.set(0, -3.25, -19.25);
+	  niceDoor.scale.set(0.8, 0.8, 0.8);
 	  scene.add(niceDoor);
   });
   
+  //key
   loader.load('./models/low-poly-key.gltf', function(gltf){
 	  var niceKey = new THREE.Object3D();
 	  niceKey = gltf.scene;
@@ -454,11 +478,26 @@ function init()
 	  pickupable.push(niceKey);
   });
   
-  loader.load('./models/puzzle_map/puzzle_map.gltf', function(gltf){
+  //map
+  loader.load('./models/puzzle_map/puzzle-map.gltf', function(gltf){
 	  var map = new THREE.Object3D();
-	  //map.position.set(0, 0, 8);
-	  //map.scale.set(5, 5, 5);
+	  map = gltf.scene;
+	  map.position.set(8, 0, -19.25);
+	  map.rotation.y = Math.PI / 2;
+	  map.rotation.z = Math.PI / 2;
+	  interactObjs.push(map);
 	  scene.add(map);
+  });
+  
+  //plaque
+  loader.load('./models/plaque.gltf', function(gltf){
+	  var plaque = new THREE.Object3D();
+	  plaque = gltf.scene;
+	  plaque.scale.set(0.5, 0.5, 0.5);
+	  plaque.position.set(5, 0, -19.25);
+	  plaque.rotation.y = -Math.PI / 2;
+	  interactObjs.push(plaque);
+	  scene.add(plaque);
   });
 
   //door
