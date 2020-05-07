@@ -21,7 +21,7 @@ var velocity = new THREE.Vector3();
 var direction = new THREE.Vector3();
 var vertex = new THREE.Vector3();
 
-window.onload = function init()
+function init()
 {
   // setting the scene
   scene = new THREE.Scene();
@@ -126,8 +126,9 @@ window.onload = function init()
 			winner = false;
 			blocker.style.display = 'none';
 			winScreen.style.display = 'none';
-			controls.lock();
-			scene.visible = true;
+			/*controls.unlock();
+			scene.visible = true;*/
+			init();
 		}
 		break;
     }
@@ -137,16 +138,22 @@ window.onload = function init()
 		if (document.pointerLockElement != null){
 			clicked = true;
 		}
+		/*console.log("X: " + event.clientX);
+		console.log("Y: " + event.clientY);
+		console.log("Width: " + window.innerWidth);
+		console.log("Height: " + window.innerHeight);*/
   };
 
   var onmousemove = function (event) {
-		/*if (document.pointerLockElement != null){
-			mouse.x = window.innerWidth / 2;
-			mouse.y = window.innerHeight / 2;
-		} else {*/
+		if (document.pointerLockElement != null){
+			mouse.x = 0.48 * 2 - 1;
+			mouse.y = 0.48 * 2 - 1;
+		} else {
 			mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 			mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-		/*}*/
+			/*console.log(mouse.x);
+			console.log(mouse.y);*/
+		}
 
 	};
 
@@ -371,6 +378,8 @@ window.onload = function init()
 
   GameLoop();
 }
+
+window.onload = init;
 
 function update()
 {
