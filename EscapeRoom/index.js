@@ -32,6 +32,8 @@ var prevTime = performance.now();
 var velocity = new THREE.Vector3();
 var direction = new THREE.Vector3();
 var vertex = new THREE.Vector3();
+// for sound effects
+var soundEffects = [];
 
 function init()
 {
@@ -56,6 +58,14 @@ function init()
     camera.aspect = width/height;
     camera.updateProjectionMatrix();
   });
+
+  //camera target
+  var targetGeometry = new THREE.RingGeometry(0.01,0.02,18);
+  var targetMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: false });
+  var target = new THREE.Mesh(targetGeometry, targetMaterial);
+  scene.add(target);
+  camera.add(target);
+  target.position.set(0,0,-1);
 
   // pointer lock controls
   controls = new THREE.PointerLockControls( camera, document.body );
@@ -139,6 +149,7 @@ function init()
         {
           bookClickedOn = false;
           camera.remove(bookpage);
+          playSound('bkclose');
         }
         break;
 	  case 82:
@@ -170,7 +181,21 @@ function init()
 			/*console.log(mouse.x);
 			console.log(mouse.y);*/
 		}
-
+    var rayray  = new THREE.Raycaster();
+    rayray.setFromCamera( mouse, camera );
+    var intersects = rayray.intersectObjects(interactObjs, true);
+    if( intersects.length > 0 )
+    {
+      var obj = getAncestor(intersects[0].object);
+      //console.log('mouse is over ' + obj.name );
+      target.material.color.setHex(0xff0000);
+      target.scale.set(1.2,1.2,1.2);
+    }
+    else
+    {
+      target.material.color.setHex(0x000000);
+      target.scale.set(5.0/6,5.0/6,5.0/6);
+    }
 	};
 
   document.addEventListener( 'keydown', onKeyDown, false );
@@ -180,64 +205,57 @@ function init()
 
   raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3(0,-1,0), 0, 10);
   var bookshelfT, bookshelfP, bookshelfLB, bookshelfG;
-  
+
   // create the empty room
-  //camera target
-  var targetGeometry = new THREE.RingGeometry(0.1,0.2,18);
-  var targetMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: false });
-  var target = new THREE.Mesh(targetGeometry, targetMaterial);
-  scene.add(target);
-  camera.add(target);
-  target.position.set(0,0,-5);
-  
+
   // floor
   var floorGeometry = new THREE.CubeGeometry(30, 1, 40);
-  var floorMaterial = new THREE.MeshBasicMaterial({ color: 0x6f3610, wireframe: false });
+  var floorMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false, map: new THREE.TextureLoader().load('images/floor.jpg') });
   var floorCube = new THREE.Mesh(floorGeometry, floorMaterial);
   floorCube.position.y = -5;
   scene.add( floorCube );
 
   // ceiling
   var ceilingGeometry = new THREE.CubeGeometry(30, 1, 40);
-  var ceilingMaterial = new THREE.MeshBasicMaterial({ color: 0xdfdfdf, wireframe: false });
+  var ceilingMaterial = new THREE.MeshBasicMaterial({ color: 0xdfdfdf, wireframe: false, map: new THREE.TextureLoader().load('./images/ceiling.jpg') });
   var ceilingCube = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
   ceilingCube.position.y = 5;
   scene.add( ceilingCube );
 
   // left wall
   var leftWallGeometry = new THREE.CubeGeometry(1, 10, 40);
-  var leftWallMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false });
+  var leftWallMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false, map: new THREE.TextureLoader().load('./images/wall.jpg') });
   var leftWallCube = new THREE.Mesh(leftWallGeometry, leftWallMaterial);
   leftWallCube.position.x = -15;
   scene.add( leftWallCube );
 
   // right wall
   var rightWallGeometry = new THREE.CubeGeometry(1, 10, 40);
-  var rightWallMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false });
+  var rightWallMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false, map: new THREE.TextureLoader().load('./images/wall.jpg') });
   var rightWallCube = new THREE.Mesh(rightWallGeometry, rightWallMaterial);
   rightWallCube.position.x = 15;
   scene.add( rightWallCube );
 
   // front wall
   var frontWallGeometry = new THREE.CubeGeometry(30, 10, 1);
-  var frontWallMaterial = new THREE.MeshBasicMaterial({ color: 0xfdfdfd, wireframe: false });
+  var frontWallMaterial = new THREE.MeshBasicMaterial({ color: 0xfdfdfd, wireframe: false, map: new THREE.TextureLoader().load('./images/wall.jpg') });
   var frontWallCube = new THREE.Mesh(frontWallGeometry, frontWallMaterial);
   frontWallCube.position.z = -20;
   scene.add( frontWallCube );
 
   // back wall
   var backWallGeometry = new THREE.CubeGeometry(30, 10, 1);
-  var backWallMaterial = new THREE.MeshBasicMaterial({ color: 0xfdfdfd, wireframe: false });
+  var backWallMaterial = new THREE.MeshBasicMaterial({ color: 0xfdfdfd, wireframe: false, map: new THREE.TextureLoader().load('./images/wall.jpg') });
   var backWallCube = new THREE.Mesh(backWallGeometry, backWallMaterial);
   backWallCube.position.z = 20;
   scene.add( backWallCube );
 
   // lighting
-  var ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+  var ambientLight = new THREE.AmbientLight(0xffffff, 1);
   scene.add(ambientLight);
-  var spotLight1 = new THREE.SpotLight( 0xffffff, 100, 10 );
+  var spotLight1 = new THREE.SpotLight( 0xffffff, 10, 100 );
   spotLight1.position.set(0, 3, 0);
-  scene.add(spotLight1);
+  //scene.add(spotLight1);
   // var helper = new THREE.PointLightHelper( spotLight1 );
   // scene.add(helper);
   var light1 = new THREE.PointLight( 0xffffff, 4, 10 );
@@ -252,7 +270,10 @@ function init()
   var light4 = new THREE.PointLight( 0xffffff, 4, 10 );
   light4.position.set(-9.5, -2, 18);
   scene.add( light4 );
-  
+  var light5 = new THREE.PointLight( 0xffffff, 4, 10 );
+  light5.position.set(0, 0, 0);
+  scene.add( light5 );
+
   // symbols painting
   var loader = new THREE.GLTFLoader();
   loader.load('./models/symbols_painting/scene.gltf', function(gltf){
@@ -307,7 +328,7 @@ function init()
     scene.add(bookTable);
   });
 
-  // symbolBook
+  // symbolBook + lightBook
   loader.load('./models/book/scene.gltf', function(gltf){
       var symbolBook = new THREE.Object3D();
       symbolBook = gltf.scene;
@@ -323,7 +344,28 @@ function init()
       scene.add(lightBook);
       interactObjs.push(lightBook);
   });
-  
+
+  // instruction book
+  loader.load('./models/fancybook/scene.gltf', function(gltf){
+    var instructionBook = new THREE.Object3D();
+    instructionBook = gltf.scene;
+    instructionBook.position.set(0,-1.7,-2);
+    instructionBook.scale.set(0.4,0.4,0.4);
+    instructionBook.rotation.y = -Math.PI/2;
+    instructionBook.name = 'instructionBook';
+    scene.add(instructionBook);
+    interactObjs.push(instructionBook);
+  });
+
+  // round table for instruction book
+  loader.load('./models/roundtable/scene.gltf', function(gltf){
+    var roundTable = new THREE.Object3D();
+    roundTable = gltf.scene;
+    roundTable.position.set(0,-5,-2);
+    roundTable.scale.set(0.25,0.5,0.25);
+    scene.add(roundTable);
+  });
+
   loader.load('./models/battery.gltf', function(gltf){
 	  var battery = new THREE.Object3D();
 	  battery = gltf.scene;
@@ -331,14 +373,14 @@ function init()
 	  battery.position.set(0, -4, 0);
 	  scene.add(battery);
   });
-  
+
   /*loader.load('./models/bookshelves/bookshelf_red.gltf', function(gltf){
 	  var bookshelfR = new THREE.Object3D();
 	  bookshelfR = gltf.scene;
 	  bookshelfR.postion.set(0, -5, 10);
 	  scene.add(bookshelfR);
   });*/
-  
+
   loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
 	  var bookshelfB = new THREE.Object3D();
 	  bookshelfB = gltf.scene;
@@ -355,7 +397,7 @@ function init()
 	  bookshelfB.rotation.y = Math.PI / 2;
 	  scene.add(bookshelfB);
   });
-  
+
   loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
 	  var bookshelfB = new THREE.Object3D();
 	  bookshelfB = gltf.scene;
@@ -364,7 +406,7 @@ function init()
 	  bookshelfB.rotation.y = Math.PI / 2;
 	  scene.add(bookshelfB);
   });
-  
+
   loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
 	  var bookshelfB = new THREE.Object3D();
 	  bookshelfB = gltf.scene;
@@ -373,7 +415,7 @@ function init()
 	  bookshelfB.rotation.y = Math.PI / 2;
 	  scene.add(bookshelfB);
   });
-  
+
   loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
 	  var bookshelfB = new THREE.Object3D();
 	  bookshelfB = gltf.scene;
@@ -390,7 +432,7 @@ function init()
 	  bookshelfB.rotation.y = -Math.PI / 2;
 	  scene.add(bookshelfB);
   });
-  
+
   loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
 	  var bookshelfB = new THREE.Object3D();
 	  bookshelfB = gltf.scene;
@@ -399,7 +441,7 @@ function init()
 	  bookshelfB.rotation.y = -Math.PI / 2;
 	  scene.add(bookshelfB);
   });
-  
+
   loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
 	  var bookshelfB = new THREE.Object3D();
 	  bookshelfB = gltf.scene;
@@ -408,42 +450,42 @@ function init()
 	  bookshelfB.rotation.y = -Math.PI / 2;
 	  scene.add(bookshelfB);
   });
-  
+
   /*loader.load('./models/bookshelves/bookshelf_blue.gltf', function(gltf){
 	  bookshelfLB = new THREE.Object3D();
 	  bookshelfLB = gltf.scene;
 	 // bookshelfLB.postion.set(0, -1, 10);
 	  scene.add(bookshelfLB);
   });
-  
+
   loader.load('./models/bookshelves/bookshelf_purple.gltf', function(gltf){
 	  bookshelfP = new THREE.Object3D();
 	  bookshelfP = gltf.scene;
 	//  bookshelfP.postion.set(0, -1, 10);
 	  scene.add(bookshelfP);
   });
-  
+
   loader.load('./models/bookshelves/bookshelf_green.gltf', function(gltf){
 	  bookshelfG = new THREE.Object3D();
 	  bookshelfG = gltf.scene;
 	 // bookshelfG.postion.set(0, -1, 10);
 	  scene.add(bookshelfG);
   });
-  
+
   loader.load('./models/bookshelves/bookshelf_turquiouse.gltf', function(gltf){
 	  bookshelfT = new THREE.Object3D();
 	  bookshelfT = gltf.scene;
 	//  bookshelfT.postion.set(0, -1, 10);
 	  scene.add(bookshelfT);
   });*/
-  
+
   loader.load("models/door.gltf", function(gltf){
 	  var niceDoor = new THREE.Object3D();
 	 // niceDoor.position.set(0, -1, -12);
 	  niceDoor.scale.set(100, 100, 100);
 	  scene.add(niceDoor);
   });
-  
+
   loader.load('./models/low-poly-key.gltf', function(gltf){
 	  var niceKey = new THREE.Object3D();
 	  niceKey = gltf.scene;
@@ -471,7 +513,7 @@ function init()
 	scene.add(doorKey);
 	interactObjs.push(doorKey);
 	pickupable.push(doorKey);
-	
+
 	// desk lamps and lights
   loader.load('./models/desk_lamp/scene.gltf', function(gltf){
     lamp = new THREE.Object3D();
@@ -502,6 +544,36 @@ function init()
     }
   });
 
+  // loading sound effects
+  var listener = new THREE.AudioListener();
+  camera.add( listener );
+  var audioLoader = new THREE.AudioLoader();
+
+  audioLoader.load( 'audio/lampon.aiff', function(buffer){
+    var sound = new THREE.Audio(listener);
+    sound.setBuffer(buffer);
+    sound.name = 'lamp';
+    soundEffects.push(sound); // 0
+  });
+  audioLoader.load( 'audio/computeron.wav', function(buffer){
+    var sound = new THREE.Audio(listener);
+    sound.setBuffer(buffer);
+    sound.name = 'comp';
+    soundEffects.push(sound); // 1
+  });
+  audioLoader.load( 'audio/bookopen.mp3', function(buffer){
+    var sound = new THREE.Audio(listener);
+    sound.setBuffer(buffer);
+    sound.name = 'bkopen';
+    soundEffects.push(sound); // 2
+  });
+  audioLoader.load( 'audio/bookclose.wav', function(buffer){
+    var sound = new THREE.Audio(listener);
+    sound.setBuffer(buffer);
+    sound.setVolume(0.5);
+    sound.name = 'bkclose';
+    soundEffects.push(sound); // 3
+  });
 
   // initial display is only the instructions
 	winScreen.style.display = 'none';
@@ -529,6 +601,18 @@ function getAncestor(obj)
   while( !containsObj(obj, interactObjs) )
     obj = obj.parent;
   return obj;
+}
+
+// plays the sound for the given sound name
+function playSound(soundName)
+{
+  for(var i = 0; i < soundEffects.length; i++)
+  {
+    if( soundEffects[i].name == soundName ){
+      soundEffects[i].play();
+      break;
+    }
+  }
 }
 
 
@@ -575,6 +659,8 @@ function update()
         // LAMP PUZZLE interaction for the lamps (turning on and off)
         if( obj.name.startsWith('lamp') )
         {
+          // play sound
+          playSound('lamp');
           // flip the lamp's switch
           obj.turnedOn = !obj.turnedOn;
           console.log('light on: ' + obj.turnedOn );
@@ -617,6 +703,8 @@ function update()
             if(solved)
             {
               console.log('lights puzzle solved!!');
+              // play sound
+              playSound('comp');
               lightPuzzleSolved = true;
               // display the number
               var geometry = new THREE.PlaneGeometry(0.5,0.5);
@@ -637,11 +725,13 @@ function update()
         {
           if(!bookClickedOn)
           {
+            // play sound
+            playSound('bkopen');
             bookClickedOn = true;
-            var material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( "images/" + obj.name+".jpeg" ), color: 0xffffff } );
+            var material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( "images/" + obj.name+".png"), color: 0xffffff } );
             bookpage = new THREE.Sprite( material );
             camera.add( bookpage );
-            bookpage.position.set(0,0,-1);
+            bookpage.position.set(0,0,-0.7);
             console.log('clicked on book');
           }
         }
