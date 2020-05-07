@@ -8,14 +8,26 @@ var moveBack = false;
 var moveRight = false;
 var moveLeft = false;
 var mouse = new THREE.Vector2();
-var doorKey;
+// interactive objects
+var interactObjs = [];
 var door;
+var lamp;
+var lightsOn = [];
+var lightPuzzleSolved = false;
+var bookClickedOn = false;
+var bookpage;
+var desks;
+// variables for objects the user picks up
+var pickupable = [];
+var doorKey;
 var clicked = false;
 var pickedUp = false;
-
+var pickedUpObject;
+var objOgLocation = new THREE.Vector3();
+//Shows whether or not the player has won the game
 var winner = false;
 var winScreen = document.getElementById('win');
-
+//Keeps track of time and physics elements of the game
 var prevTime = performance.now();
 var velocity = new THREE.Vector3();
 var direction = new THREE.Vector3();
@@ -30,12 +42,11 @@ function init()
   //Changed initial position of player
   camera.lookAt( new THREE.Vector3(0,0,-10) );
   camera.position.z = 3;
+  scene.add(camera);
 
   renderer = new THREE.WebGLRenderer();
   renderer.setSize( window.innerWidth, window.innerHeight );
   document.body.appendChild( renderer.domElement );
-
-  //rayray.far = 3.0f;
 
   // add this in case the window is resized
   window.addEventListener( 'resize', function(){
@@ -78,26 +89,23 @@ function init()
 
   // this is for checking what key was clicked
   var onKeyDown = function(event){
-
-    switch( event.keyCode )
-    {
-      case 38: // up arrow key
-	  case 87: // W key
-        moveForward = true;
-        break;
-      case 37:  // left arrow key
-	  case 65:  // A key
-        moveLeft = true;
-        break;
-      case 40:  // down arrow key
-	  case 83:  // S key
-        moveBack = true;
-        break;
-      case 39:  // right arrow key
-	  case 68:  // D key
-        moveRight = true;
-        break;
-    }
+	if (!bookClickedOn){
+		switch( event.keyCode )
+		{
+			case 38: // up arrow key
+				moveForward = true;
+				break;
+			case 37:  // left arrow key
+				moveLeft = true;
+				break;
+			case 40:  // down arrow key
+				moveBack = true;
+				break;
+			case 39:  // right arrow key
+				moveRight = true;
+				break;
+		}
+	}
   };
 
   // after the key is released
@@ -106,20 +114,32 @@ function init()
     switch( event.keyCode )
     {
       case 38: // up arrow key
-	  case 87: // W key
         moveForward = false;
         break;
       case 37:  // left arrow key
-	  case 65:  // A key
         moveLeft = false;
         break;
       case 40:  // down arrow key
-	  case 83:  // S key
         moveBack = false;
         break;
       case 39:  // right arrow key
-	  case 68:  // D key
         moveRight = false;
+        break;
+	  case 68:  // D key pressed, dropping object
+        if(pickedUp)
+        {
+          // set object to its original location
+          camera.remove(pickedUpObject);
+          pickedUpObject.position.set(objOgLocation.x, objOgLocation.y, objOgLocation.z);
+          scene.add(pickedUpObject);
+          console.log(pickedUpObject.position);
+          pickedUp = false;
+        }
+        else if(bookClickedOn)
+        {
+          bookClickedOn = false;
+          camera.remove(bookpage);
+        }
         break;
 	  case 82:
 		if (winner){
@@ -138,10 +158,6 @@ function init()
 		if (document.pointerLockElement != null){
 			clicked = true;
 		}
-		/*console.log("X: " + event.clientX);
-		console.log("Y: " + event.clientY);
-		console.log("Width: " + window.innerWidth);
-		console.log("Height: " + window.innerHeight);*/
   };
 
   var onmousemove = function (event) {
@@ -163,9 +179,150 @@ function init()
   document.addEventListener( 'mousemove', onmousemove, false );
 
   raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3(0,-1,0), 0, 10);
-  
-  var loader = new THREE.GLTFLoader();
   var bookshelfT, bookshelfP, bookshelfLB, bookshelfG;
+  
+  // create the empty room
+  //camera target
+  var targetGeometry = new THREE.RingGeometry(0.1,0.2,18);
+  var targetMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: false });
+  var target = new THREE.Mesh(targetGeometry, targetMaterial);
+  scene.add(target);
+  camera.add(target);
+  target.position.set(0,0,-5);
+  
+  // floor
+  var floorGeometry = new THREE.CubeGeometry(30, 1, 40);
+  var floorMaterial = new THREE.MeshBasicMaterial({ color: 0x6f3610, wireframe: false });
+  var floorCube = new THREE.Mesh(floorGeometry, floorMaterial);
+  floorCube.position.y = -5;
+  scene.add( floorCube );
+
+  // ceiling
+  var ceilingGeometry = new THREE.CubeGeometry(30, 1, 40);
+  var ceilingMaterial = new THREE.MeshBasicMaterial({ color: 0xdfdfdf, wireframe: false });
+  var ceilingCube = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
+  ceilingCube.position.y = 5;
+  scene.add( ceilingCube );
+
+  // left wall
+  var leftWallGeometry = new THREE.CubeGeometry(1, 10, 40);
+  var leftWallMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false });
+  var leftWallCube = new THREE.Mesh(leftWallGeometry, leftWallMaterial);
+  leftWallCube.position.x = -15;
+  scene.add( leftWallCube );
+
+  // right wall
+  var rightWallGeometry = new THREE.CubeGeometry(1, 10, 40);
+  var rightWallMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false });
+  var rightWallCube = new THREE.Mesh(rightWallGeometry, rightWallMaterial);
+  rightWallCube.position.x = 15;
+  scene.add( rightWallCube );
+
+  // front wall
+  var frontWallGeometry = new THREE.CubeGeometry(30, 10, 1);
+  var frontWallMaterial = new THREE.MeshBasicMaterial({ color: 0xfdfdfd, wireframe: false });
+  var frontWallCube = new THREE.Mesh(frontWallGeometry, frontWallMaterial);
+  frontWallCube.position.z = -20;
+  scene.add( frontWallCube );
+
+  // back wall
+  var backWallGeometry = new THREE.CubeGeometry(30, 10, 1);
+  var backWallMaterial = new THREE.MeshBasicMaterial({ color: 0xfdfdfd, wireframe: false });
+  var backWallCube = new THREE.Mesh(backWallGeometry, backWallMaterial);
+  backWallCube.position.z = 20;
+  scene.add( backWallCube );
+
+  // lighting
+  var ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+  scene.add(ambientLight);
+  var spotLight1 = new THREE.SpotLight( 0xffffff, 100, 10 );
+  spotLight1.position.set(0, 3, 0);
+  scene.add(spotLight1);
+  // var helper = new THREE.PointLightHelper( spotLight1 );
+  // scene.add(helper);
+  var light1 = new THREE.PointLight( 0xffffff, 4, 10 );
+  light1.position.set(4, -2, 18);
+  scene.add( light1 );
+  var light2 = new THREE.PointLight( 0xffffff, 4, 10 );
+  light2.position.set(-0.5, -2, 18);
+  scene.add( light2 );
+  var light3 = new THREE.PointLight( 0xffffff, 4, 10 );
+  light3.position.set(-5, -2, 18);
+  scene.add( light3 );
+  var light4 = new THREE.PointLight( 0xffffff, 4, 10 );
+  light4.position.set(-9.5, -2, 18);
+  scene.add( light4 );
+  
+  // symbols painting
+  var loader = new THREE.GLTFLoader();
+  loader.load('./models/symbols_painting/scene.gltf', function(gltf){
+    var symbolPainting = new THREE.Object3D();
+    symbolPainting = gltf.scene;
+    symbolPainting.scale.set(0.1,0.1,0.1);
+    symbolPainting.position.set(-14.25, 0, 0);
+    scene.add(symbolPainting);
+  });
+
+  // desks
+  desks = new THREE.Object3D();
+  desks.deskList = [];
+  loader.load('./models/computerdesk/scene.gltf', function(gltf){
+    var desk = new THREE.Object3D();
+    desk = gltf.scene;
+    desk.scale.set(0.02,0.02,0.02);
+    for(var i = 0; i < 4; i++)
+    {
+      var cloneDesk = desk.clone();
+      cloneDesk.position.set(4-i*4.5,-4.5,18.8);
+      desks.add(cloneDesk);
+      desks.deskList.push(cloneDesk);
+    }
+  });
+  scene.add(desks);
+
+  // desk chairs
+  var chairs = new THREE.Object3D();
+  loader.load('./models/deskchair/scene.gltf', function(gltf){
+    var chair = new THREE.Object3D();
+    chair = gltf.scene;
+    chair.scale.set(0.08,0.08,0.08);
+    for( var i = 0; i < 4; i++ )
+    {
+      var cloneChair = chair.clone();
+      cloneChair.position.set(4-i*4.5, -1.7, 18);
+      // orient chair correctly
+      cloneChair.rotation.y = -Math.PI/2;
+      chairs.add(cloneChair);
+    }
+  });
+  scene.add(chairs);
+
+  // book table
+  var bookTable = new THREE.Object3D();
+  loader.load('./models/table/scene.gltf', function(gltf){
+    bookTable = gltf.scene;
+    bookTable.position.set(9,-5,0);
+    bookTable.scale.set(3, 3, 3);
+    bookTable.rotation.y = Math.PI/2;
+    scene.add(bookTable);
+  });
+
+  // symbolBook
+  loader.load('./models/book/scene.gltf', function(gltf){
+      var symbolBook = new THREE.Object3D();
+      symbolBook = gltf.scene;
+      symbolBook.scale.set(0.3,0.3,0.3);
+      symbolBook.position.set(9, -2.5, 0);
+      symbolBook.rotation.y = Math.PI/2;
+      symbolBook.name = 'symbolBook';
+      scene.add(symbolBook);
+      interactObjs.push(symbolBook);
+      var lightBook = symbolBook.clone();
+      lightBook.position.set(9, -2.5, 2);
+      lightBook.name = 'lightBook';
+      scene.add(lightBook);
+      interactObjs.push(lightBook);
+  });
   
   loader.load('./models/battery.gltf', function(gltf){
 	  var battery = new THREE.Object3D();
@@ -174,9 +331,6 @@ function init()
 	  battery.position.set(0, -4, 0);
 	  scene.add(battery);
   });
-  
-  //battery.scale.set(0.5, 0.5, 0.5);
-  //battery.position.set(0, -5, 0);
   
   /*loader.load('./models/bookshelves/bookshelf_red.gltf', function(gltf){
 	  var bookshelfR = new THREE.Object3D();
@@ -283,80 +437,22 @@ function init()
 	  scene.add(bookshelfT);
   });*/
   
+  loader.load("models/door.gltf", function(gltf){
+	  var niceDoor = new THREE.Object3D();
+	 // niceDoor.position.set(0, -1, -12);
+	  niceDoor.scale.set(100, 100, 100);
+	  scene.add(niceDoor);
+  });
+  
   loader.load('./models/low-poly-key.gltf', function(gltf){
 	  var niceKey = new THREE.Object3D();
 	  niceKey = gltf.scene;
 	  niceKey.scale.set(0.002, 0.002, 0.002);
 	  niceKey.position.set(0, -4, 10);
 	  scene.add(niceKey);
+	  interactObjs.push(niceKey);
+	  pickupable.push(niceKey);
   });
- 
-  loader.load("models/door.gltf", function(gltf){
-	  var niceDoor = new THREE.Object3D();
-	  niceDoor = new THREE.Object3D();
-	 // niceDoor.position.set(0, -1, -12);
-	  niceDoor.scale.set(1000, 1000, 1000);
-	  scene.add(niceDoor);
-  });
-  
-  // create the empty room
-  //camera target
-  var targetGeometry = new THREE.RingGeometry(0.1,0.2,18);
-  var targetMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: false });
-  var target = new THREE.Mesh(targetGeometry, targetMaterial);
-  scene.add(target);
-  camera.add(target);
-  target.position.set(0,0,-5);
-  
-  // floor
-  var floorGeometry = new THREE.CubeGeometry(30, 1, 40);
-  var floorMaterial = new THREE.MeshBasicMaterial({ color: 0x6f3610, wireframe: false });
-  var floorCube = new THREE.Mesh(floorGeometry, floorMaterial);
-  floorCube.position.y = -5;
-  scene.add( floorCube );
-
-  // ceiling
-  var ceilingGeometry = new THREE.CubeGeometry(30, 1, 40);
-  var ceilingMaterial = new THREE.MeshBasicMaterial({ color: 0xdfdfdf, wireframe: false });
-  var ceilingCube = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
-  ceilingCube.position.y = 5;
-  scene.add( ceilingCube );
-
-  // left wall
-  var leftWallGeometry = new THREE.CubeGeometry(1, 10, 40);
-  var leftWallMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false });
-  var leftWallCube = new THREE.Mesh(leftWallGeometry, leftWallMaterial);
-  leftWallCube.position.x = -15;
-  scene.add( leftWallCube );
-
-  // right wall
-  var rightWallGeometry = new THREE.CubeGeometry(1, 10, 40);
-  var rightWallMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: false });
-  var rightWallCube = new THREE.Mesh(rightWallGeometry, rightWallMaterial);
-  rightWallCube.position.x = 15;
-  scene.add( rightWallCube );
-
-  // front wall
-  var frontWallGeometry = new THREE.CubeGeometry(30, 10, 1);
-  var frontWallMaterial = new THREE.MeshBasicMaterial({ color: 0xfdfdfd, wireframe: false });
-  var frontWallCube = new THREE.Mesh(frontWallGeometry, frontWallMaterial);
-  frontWallCube.position.z = -20;
-  scene.add( frontWallCube );
-
-  // back wall
-  var backWallGeometry = new THREE.CubeGeometry(30, 10, 1);
-  var backWallMaterial = new THREE.MeshBasicMaterial({ color: 0xfdfdfd, wireframe: false });
-  var backWallCube = new THREE.Mesh(backWallGeometry, backWallMaterial);
-  backWallCube.position.z = 20;
-  scene.add( backWallCube );
-
-  // lighting
-  var ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-  scene.add(ambientLight);
-
-  var spotLight = new THREE.SpotLight( 0xff45f6, 10 );
-  spotLight.position.set(0, 5, 0);
-  scene.add(spotLight);
 
   //door
   var doorGeometry = new THREE.CubeGeometry(3, 7, 1);
@@ -371,6 +467,41 @@ function init()
 	doorKey = new THREE.Mesh(doorKeyGeometry, doorKeyMaterial);
 	doorKey.position.set(0, -4, 5);
 	scene.add(doorKey);
+	doorKey.name = 'doorKey';
+	scene.add(doorKey);
+	interactObjs.push(doorKey);
+	pickupable.push(doorKey);
+	
+	// desk lamps and lights
+  loader.load('./models/desk_lamp/scene.gltf', function(gltf){
+    lamp = new THREE.Object3D();
+    lamp = gltf.scene;
+    lamp.scale.set(0.5,0.5,0.5);
+    var lightColors = [0x00ff00, 0xff0000, 0x0000ff, 0xffff00];
+    for( var i = 0; i < 4; i++ )
+    {
+      var lampClone = lamp.clone();
+      lampClone.position.set(5-i*4.5,-2,18.8);
+      lampClone.name = 'lamp' + (i+1);
+      lampClone.turnedOn = false;
+      // orient lamp
+      var newDir = new THREE.Vector3(1,0,-1);
+      var pos = new THREE.Vector3();
+      pos.addVectors(newDir, lampClone.position);
+      lampClone.lookAt(pos);
+      interactObjs.push(lampClone);
+      scene.add(lampClone);
+      // desks directional lights
+      var pl = new THREE.PointLight(lightColors[i], 10, 1, 2);
+      pl.intensity = 0;
+      pl.position.set(0.5,1,0);
+      lampClone.add(pl);
+      lampClone.light = pl;
+      //var helper = new THREE.PointLightHelper( d1, 1 );
+      //scene.add(helper);
+    }
+  });
+
 
   // initial display is only the instructions
 	winScreen.style.display = 'none';
@@ -380,6 +511,26 @@ function init()
 }
 
 window.onload = init;
+
+// checks if object is in list
+function containsObj( obj, list )
+{
+  for( var i = 0; i < list.length; i++ )
+  {
+    if( list[i].name == obj.name )
+      return true;
+  }
+  return false;
+}
+
+// finds the senior most parent of the object (ie the whole model rather than its parts)
+function getAncestor(obj)
+{
+  while( !containsObj(obj, interactObjs) )
+    obj = obj.parent;
+  return obj;
+}
+
 
 function update()
 {
@@ -412,16 +563,112 @@ function update()
 			if (interspects.length > 0){
 				win();
 			}
-		} else {
+		} else if(!bookClickedOn) {
+      console.log('intersects length: ' + intersects.length);
+      // check if a gltf model was selected
+      if(intersects.length > 1)
+      {
+        var obj = intersects[0].object;
+        obj = getAncestor(obj);
+        console.log('object selected: ' + obj.name);
+
+        // LAMP PUZZLE interaction for the lamps (turning on and off)
+        if( obj.name.startsWith('lamp') )
+        {
+          // flip the lamp's switch
+          obj.turnedOn = !obj.turnedOn;
+          console.log('light on: ' + obj.turnedOn );
+          if( obj.turnedOn ){
+            // add to list of lights turned on
+            lightsOn.push(obj);
+            // blue light is kinda weak, so it needs more intensity
+            if(obj.name == 'lamp3')
+              obj.light.intensity = 100;
+            else
+              obj.light.intensity = 10
+          }
+          else {
+            // check if lights need to be reset
+            if( lightsOn.length == 4 )
+            {
+              // reset the puzzle and turn off lights
+              lightsOn.forEach(l => {l.light.intensity = 0;l.turnedOn=false;});
+              lightsOn = [];
+            }
+            else
+            {
+              // remove from list of lights turned on
+              lightsOn = lightsOn.filter(function(l){
+                if( l != obj ) return l;
+              });
+              obj.light.intensity = 0;
+            }
+          }
+          // check if the puzzle has been solved
+          if( lightsOn.length == 4 && !lightPuzzleSolved )
+          {
+            var correctOrder = ['lamp4','lamp2','lamp3','lamp1'];
+            var solved = true;
+            for( var i = 0; i < 4; i++ )
+            {
+              if( lightsOn[i].name != correctOrder[i] )
+                solved = false;
+            }
+            if(solved)
+            {
+              console.log('lights puzzle solved!!');
+              lightPuzzleSolved = true;
+              // display the number
+              var geometry = new THREE.PlaneGeometry(0.5,0.5);
+              var texture = new THREE.TextureLoader().load('./models/computerdesk/computerscreen.jpg');
+              var material1 = new THREE.MeshBasicMaterial( {map: texture, color:0xffffff} );
+              var compScreen = new THREE.Mesh(geometry, material1);
+              compScreen.position.set(4.05,-1.45,18.62);
+              compScreen.rotateY(Math.PI);
+              scene.add(compScreen);
+            }
+            else
+            {
+              console.log('incorrect order, click to reset');
+            }
+          }
+        }
+        else if( obj.name.endsWith('Book') )
+        {
+          if(!bookClickedOn)
+          {
+            bookClickedOn = true;
+            var material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( "images/" + obj.name+".jpeg" ), color: 0xffffff } );
+            bookpage = new THREE.Sprite( material );
+            camera.add( bookpage );
+            bookpage.position.set(0,0,-1);
+            console.log('clicked on book');
+          }
+        }
+      }
+
 			for ( var i = 0; i < intersects.length; i++ ) {
-				intersects[i].object.position.y = camera.position.y;
-				camera.add(intersects[i].object);
-				intersects[i].object.position.set(2,-2,-5);
+        // check if the object in the raycaster is pickupable, and if so pick it up
+        // TODO make sure user can't try to pick up something when already holding something
+        if( containsObj(intersects[i].object, pickupable) )
+        {
+          // save the original location of object so user drops in the original place if they want to drop an object
+          objOgLocation.x = intersects[i].object.position.x;
+          objOgLocation.y = intersects[i].object.position.y;
+          objOgLocation.z = intersects[i].object.position.z;
+  				// intersects[i].object.position.y = camera.position.y;
+          // add to camera to simulate picking up
+  				camera.add(intersects[i].object);
+  				intersects[i].object.position.set(2,-2,-5);
+          pickedUpObject = intersects[i].object;
+          pickedUp = true;
+        }
+        //console.log('intersect object position' + intersects[i].object.position);
 			}
 
-			if (intersects.length > 0){
-				pickedUp = true;
-			}
+			// if (intersects.length > 0){
+			// 	pickedUp = true;
+			// }
 
 		}
 		clicked = false;
