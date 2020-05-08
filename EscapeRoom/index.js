@@ -10,13 +10,18 @@ var moveLeft = false;
 var mouse = new THREE.Vector2();
 // interactive objects
 var interactObjs = [];
-var door;
 var lamp;
 var lightsOn = [];
 var lightPuzzleSolved = false;
 var bookClickedOn = false;
 var bookpage;
 var desks;
+var map_instructions;
+var mapInstructsClickedOn = false;
+// animations for animating
+var animations = [];
+var mixer;
+var rotate_bookshelf;
 // variables for objects the user picks up
 var pickupable = [];
 var doorKey;
@@ -27,6 +32,10 @@ var objOgLocation = new THREE.Vector3();
 //Shows whether or not the player has won the game
 var winner = false;
 var winScreen = document.getElementById('win');
+//Shows whether or not the player is entering the clock's time
+var clocking = false;
+var have_key = false;
+var clockScreen = document.getElementById('set-clock');
 //Keeps track of time and physics elements of the game
 var prevTime = performance.now();
 var velocity = new THREE.Vector3();
@@ -62,25 +71,44 @@ function init()
 
   var blocker = document.getElementById('blocker');
   var instructions = document.getElementById('instructions');
+  var clock_button = document.getElementById('button');
+  var time1 = document.getElementById('time1');
+  var time2 = document.getElementById('time2');
+  var incorrect = document.getElementById('incorrect');
 
   instructions.addEventListener( 'click', function(){
     controls.lock();
   }, false);
+  
+  button.addEventListener( 'click', function() {
+	  if (time1.value.startsWith('12') && time2.value.startsWith('46')){
+		  keyDrop();
+		  clocking = false;
+		  clockScreen.style.display = 'none';
+		  scene.visible = true;
+		  controls.lock();
+	  } else {
+		  incorrect.style.visibility = 'visible';
+	  }
+  });
 
   controls.addEventListener( 'lock', function(){
-    if (!winner){
+    if (!winner && !clocking){
 		instructions.style.display = 'none';
 		blocker.style.display = 'none';
 		winScreen.style.display = 'none';
+		clockScreen.style.display = 'none';
 		scene.visible = true;
+		clocking = false;
 	}
   });
 
   controls.addEventListener( 'unlock', function(){
-	if (!winner){
+	if (!winner && !clocking){
 		blocker.style.display = 'block';
 		instructions.style.display = '';
 		winScreen.style.display = 'none';
+		clockScreen.style.display = 'none';
 		scene.visible = false;
 	}
   });
@@ -125,6 +153,11 @@ function init()
       case 39:  // right arrow key
         moveRight = false;
         break;
+	  case 27: //escape key
+	   if (clocking){
+		   clocking = false;
+		   controls.lock();
+	   }
 	  case 68:  // D key pressed, dropping object
         if(pickedUp)
         {
@@ -139,7 +172,10 @@ function init()
         {
           bookClickedOn = false;
           camera.remove(bookpage);
-        }
+        } else if (mapInstructsClickedOn){
+			mapInstructsClickedOn = false;
+			camera.remove(map_instructions);
+		}
         break;
 	  case 82:
 		if (winner){
@@ -167,8 +203,6 @@ function init()
 		} else {
 			mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 			mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-			/*console.log(mouse.x);
-			console.log(mouse.y);*/
 		}
 
 	};
@@ -179,7 +213,6 @@ function init()
   document.addEventListener( 'mousemove', onmousemove, false );
 
   raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3(0,-1,0), 0, 10);
-  var bookshelfT, bookshelfP, bookshelfLB, bookshelfG;
   
   // create the empty room
   //camera target
@@ -253,30 +286,8 @@ function init()
   light4.position.set(-9.5, -2, 18);
   scene.add( light4 );
   
-  var manager = new THREE.LoadingManager();
-  manager.onStart = function ( url) {
-	  console.log( 'Started loading file: ' + url);
-  };
-  
-  manager.onLoad = function ( ) {
-
-	console.log( 'Loading complete!');
-   };
-   
-   manager.onProgress = function ( url, itemsLoaded, itemsTotal ) {
-
-	console.log( 'Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
-
-   };
-   
-   manager.onError = function ( url, itemsLoaded, itemsTotal ) {
-
-	console.log( 'Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
-
-   };
-  
   // symbols painting
-  var loader = new THREE.GLTFLoader(manager);
+  var loader = new THREE.GLTFLoader();
   loader.load('./models/symbols_painting/scene.gltf', function(gltf){
     var symbolPainting = new THREE.Object3D();
     symbolPainting = gltf.scene;
@@ -346,13 +357,16 @@ function init()
       interactObjs.push(lightBook);
   });
   
-  loader.load('./models/battery.gltf', function(gltf){
+  /*loader.load('./models/battery.gltf', function(gltf){
 	  var battery = new THREE.Object3D();
 	  battery = gltf.scene;
 	  battery.scale.set(0.25, 0.25, 0.25);
 	  battery.position.set(0, -4, 0);
+	  interactObjs.push(battery);
+	  pickupable.push(battery);
+	  battery.name = 'battery';
 	  scene.add(battery);
-  });
+  });*/
   
   /*loader.load('./models/bookshelves/bookshelf_red.gltf', function(gltf){
 	  var bookshelfR = new THREE.Object3D();
@@ -360,6 +374,18 @@ function init()
 	  bookshelfR.postion.set(0, -5, 10);
 	  scene.add(bookshelfR);
   });*/
+  
+  loader.load('./models/swing_bookshelf/bookshelf.gltf', function(gltf){
+	  var bookshelfB = new THREE.Object3D();
+	  bookshelfB = gltf.scene;
+	  bookshelfB.position.set(13.75, -4.5, 0);
+	  bookshelfB.scale.set(0.7, 0.7, 0.7);
+	  bookshelfB.rotation.y = -Math.PI / 2;
+	  bookshelfB.name = 'shelf';
+	  animations.push(gltf.animations);
+	  interactObjs.push(bookshelfB);
+	  scene.add(bookshelfB);
+  });
   
   loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
 	  var bookshelfB = new THREE.Object3D();
@@ -464,18 +490,9 @@ function init()
 	  niceDoor = gltf.scene;
 	  niceDoor.position.set(0, -3.25, -19.25);
 	  niceDoor.scale.set(0.8, 0.8, 0.8);
+	  niceDoor.name = 'door';
+	  interactObjs.push(niceDoor);
 	  scene.add(niceDoor);
-  });
-  
-  //key
-  loader.load('./models/low-poly-key.gltf', function(gltf){
-	  var niceKey = new THREE.Object3D();
-	  niceKey = gltf.scene;
-	  niceKey.scale.set(0.002, 0.002, 0.002);
-	  niceKey.position.set(0, -4, 10);
-	  scene.add(niceKey);
-	  interactObjs.push(niceKey);
-	  pickupable.push(niceKey);
   });
   
   //map
@@ -486,6 +503,7 @@ function init()
 	  map.rotation.y = Math.PI / 2;
 	  map.rotation.z = Math.PI / 2;
 	  interactObjs.push(map);
+	  map.name = 'map';
 	  scene.add(map);
   });
   
@@ -497,26 +515,21 @@ function init()
 	  plaque.position.set(5, 0, -19.25);
 	  plaque.rotation.y = -Math.PI / 2;
 	  interactObjs.push(plaque);
+	  plaque.name = 'plaque';
 	  scene.add(plaque);
   });
-
-  //door
-  var doorGeometry = new THREE.CubeGeometry(3, 7, 1);
-  var doorMaterial = new THREE.MeshBasicMaterial({ color: 0xcf824e });
-  door = new THREE.Mesh(doorGeometry, doorMaterial);
-  door.position.set(0, -1, -9.75);
-  scene.add(door);
-
-  // temp key
-	var doorKeyGeometry = new THREE.SphereGeometry(0.5, 20, 20);
-	var doorKeyMaterial = new THREE.MeshBasicMaterial({color: 0xffff00});
-	doorKey = new THREE.Mesh(doorKeyGeometry, doorKeyMaterial);
-	doorKey.position.set(0, -4, 5);
-	scene.add(doorKey);
-	doorKey.name = 'doorKey';
-	scene.add(doorKey);
-	interactObjs.push(doorKey);
-	pickupable.push(doorKey);
+  
+  //alarm
+  loader.load('./models/digital-clock.gltf', function(gltf){
+	  var clock = new THREE.Object3D();
+	  clock = gltf.scene;
+	  interactObjs.push(clock);
+	  clock.position.set(7.75, -2, -2);
+	  clock.scale.set(0.5, 0.5, 0.5);
+	  clock.rotation.y = -Math.PI / 2;
+	  clock.name = 'clock';
+	  scene.add(clock);
+  });
 	
 	// desk lamps and lights
   loader.load('./models/desk_lamp/scene.gltf', function(gltf){
@@ -551,6 +564,7 @@ function init()
 
   // initial display is only the instructions
 	winScreen.style.display = 'none';
+	clockScreen.style.display = 'none';
 	scene.visible = false;
 
   GameLoop();
@@ -598,16 +612,21 @@ function update()
     controls.moveForward( -velocity.z * delta );
 
 	var rayray  = new THREE.Raycaster();
-	var doorIntersector = new THREE.Raycaster();
 	rayray.setFromCamera( mouse, camera );
-	doorIntersector.setFromCamera( mouse, camera );
 	var intersects = rayray.intersectObjects(interactObjs, true);
-	var interspects = doorIntersector.intersectObject(door);
+	
+	if (mixer) {
+		mixer.update(delta);
+	}
 
 	if (clicked){
 		if (pickedUp){
-			if (interspects.length > 0){
-				win();
+			if (intersects.length > 1) {
+				var obj = intersects[0].object;
+				obj = getAncestor(obj);
+				if (obj.name.startsWith('door')){
+					win();
+				}
 			}
 		} else if(!bookClickedOn) {
       console.log('intersects length: ' + intersects.length);
@@ -690,7 +709,32 @@ function update()
             bookpage.position.set(0,0,-1);
             console.log('clicked on book');
           }
-        }
+        } else if (obj.name.startsWith('clock')){
+			if (!have_key){
+				clocksetter();
+			}
+		} else if (obj.name.startsWith('shelf')){
+			mixer = new THREE.AnimationMixer(obj);
+			var anim = THREE.AnimationClip.findByName(animations[0], 'BookshelfAction');
+			rotate_bookshelf = mixer.clipAction(anim);
+			rotate_bookshelf.setLoop(THREE.LoopOnce);
+			rotate_bookshelf.clampWhenFinished = true;
+			rotate_bookshelf.play();
+		}
+		else if (obj.name.startsWith('plaque')){
+			if (!mapInstructsClickedOn){
+			mapInstructsClickedOn = true;
+			 var material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( "images/markson.png" ), color: 0xffffff } );
+			 map_instructions = new THREE.Sprite( material );
+            camera.add( map_instructions );
+            map_instructions.position.set(0,0,-1);
+			}
+		} /*else if (obj.name.startsWith('map')){
+			 var material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( "images/" + obj.name+".jpeg" ), color: 0xffffff } );
+            bookpage = new THREE.Sprite( material );
+            camera.add( bookpage );
+            bookpage.position.set(0,0,-1);
+		}*/
       }
 
 			for ( var i = 0; i < intersects.length; i++ ) {
@@ -721,6 +765,47 @@ function update()
 	}
 
     prevTime = time;
+}
+
+function keyDrop (){
+	
+  if (!have_key){
+		var loader = new THREE.GLTFLoader();
+	//key
+	
+	// temp key
+	var doorKeyGeometry = new THREE.SphereGeometry(0.5, 20, 20);
+	var doorKeyMaterial = new THREE.MeshLambertMaterial({color: 0x00ff00, transparent: true, opacity: 0.25});
+	doorKey = new THREE.Mesh(doorKeyGeometry, doorKeyMaterial);
+	doorKey.position.set(6, -4, 1);
+	scene.add(doorKey);
+	doorKey.name = 'doorKey';
+	scene.add(doorKey);
+	interactObjs.push(doorKey);
+	pickupable.push(doorKey);
+	
+  loader.load('./models/low-poly-key.gltf', function(gltf){
+	  var niceKey = new THREE.Object3D();
+	  niceKey = gltf.scene;
+	  niceKey.scale.set(0.002, 0.002, 0.002);
+	  doorKey.add(niceKey);
+	  niceKey.position.set(2, 2, 1);
+	  scene.add(niceKey);
+	  niceKey.name = 'niceKey';
+	  interactObjs.push(niceKey);
+	  pickupable.push(niceKey);
+  });
+	
+	have_key = true;
+	}
+}
+
+function clocksetter(){
+	clocking = true;
+	blocker.style.display = 'block';
+	clockScreen.style.display = '';
+	controls.unlock();
+	scene.visible = false;
 }
 
 function win (){
