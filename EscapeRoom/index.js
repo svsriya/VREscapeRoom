@@ -89,7 +89,7 @@ function init()
   instructions.addEventListener( 'click', function(){
     controls.lock();
   }, false);
-  
+
   button.addEventListener( 'click', function() {
 	  if (time1.value.startsWith('12') && time2.value.startsWith('46')){
 		  keyDrop();
@@ -193,8 +193,7 @@ function init()
 			winner = false;
 			blocker.style.display = 'none';
 			winScreen.style.display = 'none';
-			/*controls.unlock();
-			scene.visible = true;*/
+
 			init();
 		}
 		break;
@@ -215,13 +214,13 @@ function init()
 			mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 			mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 		}
+    // for changing the target color
     var rayray  = new THREE.Raycaster();
     rayray.setFromCamera( mouse, camera );
     var intersects = rayray.intersectObjects(interactObjs, true);
     if( intersects.length > 0 )
     {
       var obj = getAncestor(intersects[0].object);
-      //console.log('mouse is over ' + obj.name );
       target.material.color.setHex(0xff0000);
       target.scale.set(1.2,1.2,1.2);
     }
@@ -238,7 +237,7 @@ function init()
   document.addEventListener( 'mousemove', onmousemove, false );
 
   raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3(0,-1,0), 0, 10);
-  
+
   // create the empty room
 
   // floor
@@ -288,9 +287,6 @@ function init()
   scene.add(ambientLight);
   var spotLight1 = new THREE.SpotLight( 0xffffff, 10, 100 );
   spotLight1.position.set(0, 3, 0);
-  //scene.add(spotLight1);
-  // var helper = new THREE.PointLightHelper( spotLight1 );
-  // scene.add(helper);
   var light1 = new THREE.PointLight( 0xffffff, 4, 10 );
   light1.position.set(4, -2, 18);
   scene.add( light1 );
@@ -378,13 +374,13 @@ function init()
       interactObjs.push(lightBook);
       var finalBook = symbolBook.clone();
       // final book for the order of the digits
-      finalBook.position.set(-3, -1.7, -2);
+      finalBook.position.set(10, -2.5, 0);
       finalBook.name = 'finalBook';
       scene.add(finalBook);
       interactObjs.push(finalBook);
   });
-  
-  
+
+
 
   // instruction book
   loader.load('./models/fancybook/scene.gltf', function(gltf){
@@ -407,25 +403,7 @@ function init()
     scene.add(roundTable);
   });
 
-/*loader.load('./models/battery.gltf', function(gltf){
-  loader.load('./models/battery.gltf', function(gltf){
-	  var battery = new THREE.Object3D();
-	  battery = gltf.scene;
-	  battery.scale.set(0.25, 0.25, 0.25);
-	  battery.position.set(0, -4, 0);
-	  interactObjs.push(battery);
-	  pickupable.push(battery);
-	  battery.name = 'battery';
-	  scene.add(battery);
-  });*/
-  
-  /*loader.load('./models/bookshelves/bookshelf_red.gltf', function(gltf){
-	  var bookshelfR = new THREE.Object3D();
-	  bookshelfR = gltf.scene;
-	  bookshelfR.postion.set(0, -5, 10);
-	  scene.add(bookshelfR);
-  });*/
-  
+  // bookshelf models 
   loader.load('./models/swing_bookshelf/bookshelf.gltf', function(gltf){
 	  var bookshelfB = new THREE.Object3D();
 	  bookshelfB = gltf.scene;
@@ -437,7 +415,7 @@ function init()
 	  interactObjs.push(bookshelfB);
 	  scene.add(bookshelfB);
   });
-  
+
   loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
 	  var bookshelfB = new THREE.Object3D();
 	  bookshelfB = gltf.scene;
@@ -508,34 +486,6 @@ function init()
 	  scene.add(bookshelfB);
   });
 
-  /*loader.load('./models/bookshelves/bookshelf_blue.gltf', function(gltf){
-	  bookshelfLB = new THREE.Object3D();
-	  bookshelfLB = gltf.scene;
-	 // bookshelfLB.postion.set(0, -1, 10);
-	  scene.add(bookshelfLB);
-  });
-
-  loader.load('./models/bookshelves/bookshelf_purple.gltf', function(gltf){
-	  bookshelfP = new THREE.Object3D();
-	  bookshelfP = gltf.scene;
-	//  bookshelfP.postion.set(0, -1, 10);
-	  scene.add(bookshelfP);
-  });
-
-  loader.load('./models/bookshelves/bookshelf_green.gltf', function(gltf){
-	  bookshelfG = new THREE.Object3D();
-	  bookshelfG = gltf.scene;
-	 // bookshelfG.postion.set(0, -1, 10);
-	  scene.add(bookshelfG);
-  });
-
-  loader.load('./models/bookshelves/bookshelf_turquiouse.gltf', function(gltf){
-	  bookshelfT = new THREE.Object3D();
-	  bookshelfT = gltf.scene;
-	//  bookshelfT.postion.set(0, -1, 10);
-	  scene.add(bookshelfT);
-  });*/
-
   loader.load("models/door.gltf", function(gltf){
 	  var niceDoor = new THREE.Object3D();
 	  niceDoor = gltf.scene;
@@ -545,7 +495,7 @@ function init()
 	  interactObjs.push(niceDoor);
 	  scene.add(niceDoor);
   });
-  
+
   //map
   loader.load('./models/puzzle_map/puzzle-map.gltf', function(gltf){
 	  var map = new THREE.Object3D();
@@ -553,11 +503,11 @@ function init()
 	  map.position.set(8, 0, -19.25);
 	  map.rotation.y = Math.PI / 2;
 	  map.rotation.z = Math.PI / 2;
-	  interactObjs.push(map);
+	//  interactObjs.push(map);
 	  map.name = 'map';
 	  scene.add(map);
   });
-  
+
   //plaque
   loader.load('./models/plaque.gltf', function(gltf){
 	  var plaque = new THREE.Object3D();
@@ -569,7 +519,7 @@ function init()
 	  plaque.name = 'plaque';
 	  scene.add(plaque);
   });
-  
+
   //alarm
   loader.load('./models/digital-clock.gltf', function(gltf){
 	  var clock = new THREE.Object3D();
@@ -581,7 +531,7 @@ function init()
 	  clock.name = 'clock';
 	  scene.add(clock);
   });
-	
+
 	// desk lamps and lights
   loader.load('./models/desk_lamp/scene.gltf', function(gltf){
     lamp = new THREE.Object3D();
@@ -687,6 +637,7 @@ function playSound(soundName)
 
 function update()
 {
+  // for pointerlock controls
 	var time = performance.now();
     var delta = (time - prevTime) / 1000;
 
@@ -704,10 +655,11 @@ function update()
     controls.moveRight( -velocity.x * delta );
     controls.moveForward( -velocity.z * delta );
 
+  // this is used to sense any objects that the mouse has clicked on
 	var rayray  = new THREE.Raycaster();
 	rayray.setFromCamera( mouse, camera );
 	var intersects = rayray.intersectObjects(interactObjs, true);
-	
+
 	if (mixer) {
 		mixer.update(delta);
 	}
@@ -828,17 +780,11 @@ function update()
             camera.add( map_instructions );
             map_instructions.position.set(0,0,-1);
 			}
-		} /*else if (obj.name.startsWith('map')){
-			 var material = new THREE.SpriteMaterial( { map: new THREE.TextureLoader().load( "images/" + obj.name+".jpeg" ), color: 0xffffff } );
-            bookpage = new THREE.Sprite( material );
-            camera.add( bookpage );
-            bookpage.position.set(0,0,-1);
-		}*/
-      }
-
+		 }
+   }
+      // logic for picking up objects
 			for ( var i = 0; i < intersects.length; i++ ) {
         // check if the object in the raycaster is pickupable, and if so pick it up
-        // TODO make sure user can't try to pick up something when already holding something
         if( containsObj(intersects[i].object, pickupable) )
         {
           // save the original location of object so user drops in the original place if they want to drop an object
@@ -855,10 +801,6 @@ function update()
         //console.log('intersect object position' + intersects[i].object.position);
 			}
 
-			// if (intersects.length > 0){
-			// 	pickedUp = true;
-			// }
-
 		}
 		clicked = false;
 	}
@@ -867,11 +809,11 @@ function update()
 }
 
 function keyDrop (){
-	
+
   if (!have_key){
 		var loader = new THREE.GLTFLoader();
 	//key
-	
+
 	// temp key
 	var doorKeyGeometry = new THREE.SphereGeometry(0.5, 20, 20);
 	var doorKeyMaterial = new THREE.MeshLambertMaterial({color: 0x00ff00, transparent: true, opacity: 0.25});
@@ -882,7 +824,7 @@ function keyDrop (){
 	scene.add(doorKey);
 	interactObjs.push(doorKey);
 	pickupable.push(doorKey);
-	
+
   loader.load('./models/low-poly-key.gltf', function(gltf){
 	  var niceKey = new THREE.Object3D();
 	  niceKey = gltf.scene;
@@ -894,7 +836,7 @@ function keyDrop (){
 	  interactObjs.push(niceKey);
 	  pickupable.push(niceKey);
   });
-	
+
 	have_key = true;
 	}
 }
