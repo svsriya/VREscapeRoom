@@ -10,7 +10,6 @@ var moveLeft = false;
 var mouse = new THREE.Vector2();
 // interactive objects
 var interactObjs = [];
-var door;
 var lamp;
 var lightsOn = [];
 var lightPuzzleSolved = false;
@@ -351,6 +350,9 @@ function init()
 	  battery = gltf.scene;
 	  battery.scale.set(0.25, 0.25, 0.25);
 	  battery.position.set(0, -4, 0);
+	  interactObjs.push(battery);
+	  pickupable.push(battery);
+	  battery.name = 'battery';
 	  scene.add(battery);
   });
   
@@ -464,6 +466,8 @@ function init()
 	  niceDoor = gltf.scene;
 	  niceDoor.position.set(0, -3.25, -19.25);
 	  niceDoor.scale.set(0.8, 0.8, 0.8);
+	  niceDoor.name = 'door';
+	  interactObjs.push(niceDoor);
 	  scene.add(niceDoor);
   });
   
@@ -474,6 +478,7 @@ function init()
 	  niceKey.scale.set(0.002, 0.002, 0.002);
 	  niceKey.position.set(0, -4, 10);
 	  scene.add(niceKey);
+	  niceKey.name = 'niceKey';
 	  interactObjs.push(niceKey);
 	  pickupable.push(niceKey);
   });
@@ -486,6 +491,7 @@ function init()
 	  map.rotation.y = Math.PI / 2;
 	  map.rotation.z = Math.PI / 2;
 	  interactObjs.push(map);
+	  map.name = 'map';
 	  scene.add(map);
   });
   
@@ -497,15 +503,16 @@ function init()
 	  plaque.position.set(5, 0, -19.25);
 	  plaque.rotation.y = -Math.PI / 2;
 	  interactObjs.push(plaque);
+	  plaque.name = 'plaque';
 	  scene.add(plaque);
   });
-
-  //door
-  var doorGeometry = new THREE.CubeGeometry(3, 7, 1);
-  var doorMaterial = new THREE.MeshBasicMaterial({ color: 0xcf824e });
-  door = new THREE.Mesh(doorGeometry, doorMaterial);
-  door.position.set(0, -1, -9.75);
-  scene.add(door);
+  
+  //alarm
+  loader.load('./models/digital-clock.gltf', function(gltf){
+	  var clock = new THREE.Object3D();
+	  clock = gltf.scene;
+	  scene.add(clock);
+  });
 
   // temp key
 	var doorKeyGeometry = new THREE.SphereGeometry(0.5, 20, 20);
@@ -598,16 +605,17 @@ function update()
     controls.moveForward( -velocity.z * delta );
 
 	var rayray  = new THREE.Raycaster();
-	var doorIntersector = new THREE.Raycaster();
 	rayray.setFromCamera( mouse, camera );
-	doorIntersector.setFromCamera( mouse, camera );
 	var intersects = rayray.intersectObjects(interactObjs, true);
-	var interspects = doorIntersector.intersectObject(door);
 
 	if (clicked){
 		if (pickedUp){
-			if (interspects.length > 0){
-				win();
+			if (intersects.length > 1) {
+				var obj = intersects[0].object;
+				obj = getAncestor(obj);
+				if (obj.name.startsWith('door')){
+					win();
+				}
 			}
 		} else if(!bookClickedOn) {
       console.log('intersects length: ' + intersects.length);
