@@ -22,6 +22,8 @@ var mapInstructsClickedOn = false;
 var animations = [];
 var mixer;
 var rotate_bookshelf;
+var have_battery = false;
+var batteredup = false;
 // variables for objects the user picks up
 var pickupable = [];
 var doorKey;
@@ -186,9 +188,9 @@ function init()
         } else if (mapInstructsClickedOn){
 		    	mapInstructsClickedOn = false;
 			    camera.remove(map_instructions);
-		    }
+		 }
         break;
-	  case 82:
+	  /*case 82:
 		if (winner){
 			winner = false;
 			blocker.style.display = 'none';
@@ -196,7 +198,7 @@ function init()
 
 			init();
 		}
-		break;
+		break;*/
     }
   };
 
@@ -669,7 +671,7 @@ function update()
 			if (intersects.length > 1) {
 				var obj = intersects[0].object;
 				obj = getAncestor(obj);
-				if (obj.name.startsWith('door')){
+				if (obj.name.startsWith('door') && pickedUpObject.name.startsWith('Torus_1')){
 					win();
 				}
 			}
@@ -785,18 +787,19 @@ function update()
       // logic for picking up objects
 			for ( var i = 0; i < intersects.length; i++ ) {
         // check if the object in the raycaster is pickupable, and if so pick it up
-        if( containsObj(intersects[i].object, pickupable) )
+        if( containsObj(getAncestor(intersects[i].object), pickupable) )
         {
           // save the original location of object so user drops in the original place if they want to drop an object
-          objOgLocation.x = intersects[i].object.position.x;
-          objOgLocation.y = intersects[i].object.position.y;
-          objOgLocation.z = intersects[i].object.position.z;
+          objOgLocation.x = getAncestor(intersects[i].object).position.x;
+          objOgLocation.y = getAncestor(intersects[i].object).position.y;
+          objOgLocation.z = getAncestor(intersects[i].object).position.z;
   				// intersects[i].object.position.y = camera.position.y;
           // add to camera to simulate picking up
-  				camera.add(intersects[i].object);
-  				intersects[i].object.position.set(2,-2,-5);
-          pickedUpObject = intersects[i].object;
-          pickedUp = true;
+  				camera.add(getAncestor(intersects[i].object));
+  				getAncestor(intersects[i].object).position.set(2,-2,-5);
+				pickedUpObject = intersects[0].object;
+				console.log(pickedUpObject.name);
+				pickedUp = true;
         }
         //console.log('intersect object position' + intersects[i].object.position);
 			}
@@ -814,23 +817,11 @@ function keyDrop (){
 		var loader = new THREE.GLTFLoader();
 	//key
 
-	// temp key
-	var doorKeyGeometry = new THREE.SphereGeometry(0.5, 20, 20);
-	var doorKeyMaterial = new THREE.MeshLambertMaterial({color: 0x00ff00, transparent: true, opacity: 0.25});
-	doorKey = new THREE.Mesh(doorKeyGeometry, doorKeyMaterial);
-	doorKey.position.set(6, -4, 1);
-	scene.add(doorKey);
-	doorKey.name = 'doorKey';
-	scene.add(doorKey);
-	interactObjs.push(doorKey);
-	pickupable.push(doorKey);
-
   loader.load('./models/low-poly-key.gltf', function(gltf){
 	  var niceKey = new THREE.Object3D();
 	  niceKey = gltf.scene;
-	  niceKey.scale.set(0.002, 0.002, 0.002);
-	  doorKey.add(niceKey);
-	  niceKey.position.set(2, 2, 1);
+	  niceKey.scale.set(0.005, 0.005, 0.005);
+	  niceKey.position.set(6, -4, 1);
 	  scene.add(niceKey);
 	  niceKey.name = 'niceKey';
 	  interactObjs.push(niceKey);
