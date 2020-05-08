@@ -343,6 +343,12 @@ function init()
       lightBook.name = 'lightBook';
       scene.add(lightBook);
       interactObjs.push(lightBook);
+      var finalBook = symbolBook.clone();
+      // final book for the order of the digits
+      finalBook.position.set(-3, -1.7, -2);
+      finalBook.name = 'finalBook';
+      scene.add(finalBook);
+      interactObjs.push(finalBook);
   });
 
   // instruction book
