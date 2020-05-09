@@ -351,61 +351,80 @@ function init()
 
   // book table
   var bookTable = new THREE.Object3D();
-  loader.load('./models/table/scene.gltf', function(gltf){
+  loader.load('./models/lowpolytable/scene.gltf', function(gltf){
     bookTable = gltf.scene;
-    bookTable.position.set(9,-5,0);
-    bookTable.scale.set(3, 3, 3);
+    bookTable.position.set(-8,-5,-15);
+    bookTable.scale.set(0.5, 0.5, 0.5);
     bookTable.rotation.y = Math.PI/2;
     scene.add(bookTable);
   });
 
   // symbolBook + lightBook
   loader.load('./models/book/scene.gltf', function(gltf){
+      // symbol book
       var symbolBook = new THREE.Object3D();
       symbolBook = gltf.scene;
       symbolBook.scale.set(0.3,0.3,0.3);
-      symbolBook.position.set(9, -2.5, 0);
-      symbolBook.rotation.y = Math.PI/2;
+      symbolBook.position.set(-9, -2.3, -13);
       symbolBook.name = 'symbolBook';
       scene.add(symbolBook);
       interactObjs.push(symbolBook);
+      // light hint book
       var lightBook = symbolBook.clone();
-      lightBook.position.set(9, -2.5, 2);
+      lightBook.position.set(-7, -2.3, -13);
       lightBook.name = 'lightBook';
       scene.add(lightBook);
       interactObjs.push(lightBook);
-      var finalBook = symbolBook.clone();
       // final book for the order of the digits
-      finalBook.position.set(10, -2.5, 0);
+      var finalBook = symbolBook.clone();
+      finalBook.position.set(-9.5, -2.3, -15);
       finalBook.name = 'finalBook';
       scene.add(finalBook);
       interactObjs.push(finalBook);
+      // instruction book
+      var instructionBook = symbolBook.clone();
+      instructionBook.position.set(0,-0.5,-3.5);
+      instructionBook.scale.set(0.5,0.5,0.5);
+      instructionBook.rotation.y = Math.PI;
+      instructionBook.rotation.x = Math.PI/4;
+      instructionBook.name = 'instructionBook';
+      scene.add(instructionBook);
+      interactObjs.push(instructionBook);
   });
 
 
 
-  // instruction book
-  loader.load('./models/fancybook/scene.gltf', function(gltf){
-    var instructionBook = new THREE.Object3D();
-    instructionBook = gltf.scene;
-    instructionBook.position.set(0,-1.7,-2);
-    instructionBook.scale.set(0.4,0.4,0.4);
-    instructionBook.rotation.y = -Math.PI/2;
-    instructionBook.name = 'instructionBook';
-    scene.add(instructionBook);
-    interactObjs.push(instructionBook);
-  });
+  // // instruction book
+  // loader.load('./models/fancybook/scene.gltf', function(gltf){
+  //   var instructionBook = new THREE.Object3D();
+  //   instructionBook = gltf.scene;
+  //   instructionBook.position.set(0,-1.7,-2);
+  //   instructionBook.scale.set(0.4,0.4,0.4);
+  //   instructionBook.rotation.y = -Math.PI/2;
+  //   instructionBook.name = 'instructionBook';
+  //   scene.add(instructionBook);
+  //   interactObjs.push(instructionBook);
+  // });
 
   // round table for instruction book
-  loader.load('./models/roundtable/scene.gltf', function(gltf){
+  loader.load('./models/bookstand/scene.gltf', function(gltf){
     var roundTable = new THREE.Object3D();
     roundTable = gltf.scene;
-    roundTable.position.set(0,-5,-2);
-    roundTable.scale.set(0.25,0.5,0.25);
+    roundTable.position.set(8.5,-19.7,-12);
+    roundTable.scale.set(4,4,4);
+    roundTable.rotation.y = -Math.PI/2;
     scene.add(roundTable);
   });
+  // click here mark
+  var geo = new THREE.PlaneGeometry(1,0.5);
+  var tex = new THREE.TextureLoader().load('./images/click-here.jpg');
+  var mat = new THREE.MeshBasicMaterial( {map: tex, color:0xffffff} );
+  var clickHere = new THREE.Mesh(geo, mat);
+  clickHere.position.set(1,0,-3);
+  //clickHere.rotateY(Math.PI);
+  scene.add(clickHere);
 
-  // bookshelf models 
+  // bookshelf models
   loader.load('./models/swing_bookshelf/bookshelf.gltf', function(gltf){
 	  var bookshelfB = new THREE.Object3D();
 	  bookshelfB = gltf.scene;
@@ -509,9 +528,9 @@ function init()
 	  var clock = new THREE.Object3D();
 	  clock = gltf.scene;
 	  interactObjs.push(clock);
-	  clock.position.set(7.75, -2, -2);
+	  clock.position.set(-8, -2, -15);
 	  clock.scale.set(0.5, 0.5, 0.5);
-	  clock.rotation.y = -Math.PI / 2;
+	  //clock.rotation.y = -Math.PI / 2;
 	  clock.name = 'clock';
 	  scene.add(clock);
   });
