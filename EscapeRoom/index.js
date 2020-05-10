@@ -8,6 +8,8 @@ var moveBack = false;
 var moveRight = false;
 var moveLeft = false;
 var mouse = new THREE.Vector2();
+var manager = new THREE.LoadingManager();
+var loadingDone = false;
 // interactive objects
 var interactObjs = [];
 var lamp;
@@ -82,11 +84,32 @@ function init()
   controls = new THREE.PointerLockControls( camera, document.body );
 
   var blocker = document.getElementById('blocker');
+  var loadingscreen = document.getElementById('loading-screen');
   var instructions = document.getElementById('instructions');
   var clock_button = document.getElementById('button');
   var time1 = document.getElementById('time1');
   var time2 = document.getElementById('time2');
   var incorrect = document.getElementById('incorrect');
+
+  // initial display is only the instructions
+  loadingscreen.style.display = 'none';
+  winScreen.style.display = 'none';
+  clockScreen.style.display = 'none';
+  scene.visible = false;
+
+  manager.onStart = function(){
+    console.log( 'Started loading files.');
+    loadingscreen.style.display = '';
+  };
+  manager.onProgress = function(){
+    console.log( 'Loading file.' );
+    loadingscreen.style.display = '';
+  };
+  manager.onLoad = function(){
+    console.log( 'Loading complete!' );
+    loadingscreen.style.display = 'none';
+    loadingDone = true;
+  };
 
   instructions.addEventListener( 'click', function(){
     controls.lock();
@@ -105,7 +128,8 @@ function init()
   });
 
   controls.addEventListener( 'lock', function(){
-    if (!winner && !clocking){
+    if (!winner && !clocking && loadingDone ){
+    loadingscreen.style.display = 'none';
 		instructions.style.display = 'none';
 		blocker.style.display = 'none';
 		winScreen.style.display = 'none';
@@ -116,7 +140,8 @@ function init()
   });
 
   controls.addEventListener( 'unlock', function(){
-	if (!winner && !clocking){
+	if (!winner && !clocking && loadingDone){
+    loadingscreen.style.display = 'none';
 		blocker.style.display = 'block';
 		instructions.style.display = '';
 		winScreen.style.display = 'none';
@@ -307,7 +332,7 @@ function init()
   scene.add( light5 );
 
   // symbols painting
-  var loader = new THREE.GLTFLoader();
+  var loader = new THREE.GLTFLoader(manager);
   loader.load('./models/symbols_painting/scene.gltf', function(gltf){
     var symbolPainting = new THREE.Object3D();
     symbolPainting = gltf.scene;
@@ -392,8 +417,6 @@ function init()
       scene.add(instructionBook);
       interactObjs.push(instructionBook);
   });
-
-
 
   // // instruction book
   // loader.load('./models/fancybook/scene.gltf', function(gltf){
@@ -489,6 +512,24 @@ function init()
 	  bookshelfB.rotation.y = -Math.PI / 2;
 	  scene.add(bookshelfB);
   });
+
+  // loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
+	//   var bookshelfB = new THREE.Object3D();
+	//   bookshelfB = gltf.scene;
+	//   bookshelfB.position.set(13.75, -4.5, 7);
+	//   bookshelfB.scale.set(0.65, 0.65, 0.65);
+	//   bookshelfB.rotation.y = -Math.PI / 2;
+	//   scene.add(bookshelfB);
+  // });
+  //
+  // loader.load('./models/bookshelves/bookshelf_black.gltf', function(gltf){
+	//   var bookshelfB = new THREE.Object3D();
+	//   bookshelfB = gltf.scene;
+	//   bookshelfB.position.set(13.75, -4.5, -7);
+	//   bookshelfB.scale.set(0.65, 0.65, 0.65);
+	//   bookshelfB.rotation.y = -Math.PI / 2;
+	//   scene.add(bookshelfB);
+  // });
 
   loader.load("models/door.gltf", function(gltf){
 	  var niceDoor = new THREE.Object3D();
@@ -596,11 +637,6 @@ function init()
     sound.name = 'bkclose';
     soundEffects.push(sound); // 3
   });
-
-  // initial display is only the instructions
-	winScreen.style.display = 'none';
-	clockScreen.style.display = 'none';
-	scene.visible = false;
 
   GameLoop();
 }
