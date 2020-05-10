@@ -175,6 +175,7 @@ function init()
         {
           // set object to its original location
           camera.remove(pickedUpObject);
+          //pickedUpObject.scale.set(2,2,2);
           pickedUpObject.position.set(objOgLocation.x, objOgLocation.y, objOgLocation.z);
           scene.add(pickedUpObject);
           console.log(pickedUpObject.position);
@@ -644,9 +645,9 @@ function update()
 	var time = performance.now();
     var delta = (time - prevTime) / 1000;
 
-    velocity.x -= velocity.x * 10.0 * delta;
-    velocity.z -= velocity.z * 10.0 * delta;
-    velocity.y -= 9.8 * 100.0 * delta;  // 100.0 = mass
+    velocity.x -= velocity.x * 20.0 * delta;
+    velocity.z -= velocity.z * 20.0 * delta;
+    velocity.y -= 20.0 * 100.0 * delta;  // 100.0 = mass
 
     direction.z = Number( moveForward ) - Number( moveBack );
     direction.x = Number( moveRight ) - Number( moveLeft );
@@ -672,7 +673,7 @@ function update()
 			if (intersects.length > 1) {
 				var obj = intersects[0].object;
 				obj = getAncestor(obj);
-				if (obj.name.startsWith('door') && pickedUpObject.name.startsWith('Torus_1')){
+				if (obj.name.startsWith('door') && pickedUpObject.name.startsWith('niceKey')){
 					win();
 				}
 			}
@@ -797,10 +798,10 @@ function update()
   				// intersects[i].object.position.y = camera.position.y;
           // add to camera to simulate picking up
   				camera.add(getAncestor(intersects[i].object));
-  				getAncestor(intersects[i].object).position.set(2,-2,-5);
-				pickedUpObject = intersects[0].object;
-				console.log(pickedUpObject.name);
-				pickedUp = true;
+  				getAncestor(intersects[i].object).position.set(2,-1,-2);
+				  pickedUpObject = getAncestor(intersects[0].object);
+				  console.log(pickedUpObject.name);
+			    pickedUp = true;
         }
         //console.log('intersect object position' + intersects[i].object.position);
 			}
@@ -821,8 +822,8 @@ function keyDrop (){
   loader.load('./models/low-poly-key.gltf', function(gltf){
 	  var niceKey = new THREE.Object3D();
 	  niceKey = gltf.scene;
-	  niceKey.scale.set(0.005, 0.005, 0.005);
-	  niceKey.position.set(6, -4, 1);
+	  niceKey.scale.set(0.01, 0.01, 0.01);
+	  niceKey.position.set(6, -3, 1);
 	  scene.add(niceKey);
 	  niceKey.name = 'niceKey';
 	  interactObjs.push(niceKey);
