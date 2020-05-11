@@ -823,22 +823,22 @@ function update()
 		 }
    }
       // logic for picking up objects
-			for ( var i = 0; i < intersects.length; i++ ) {
+			//for ( var i = 0; i < intersects.length; i++ ) {
         // check if the object in the raycaster is pickupable, and if so pick it up
-        if( containsObj(getAncestor(intersects[i].object), pickupable) )
+        if( intersects.length > 0 && containsObj(getAncestor(intersects[0].object), pickupable) )
         {
           // save the original location of object so user drops in the original place if they want to drop an object
-          objOgLocation.x = getAncestor(intersects[i].object).position.x;
-          objOgLocation.y = getAncestor(intersects[i].object).position.y;
-          objOgLocation.z = getAncestor(intersects[i].object).position.z;
+          objOgLocation.x = getAncestor(intersects[0].object).position.x;
+          objOgLocation.y = getAncestor(intersects[0].object).position.y;
+          objOgLocation.z = getAncestor(intersects[0].object).position.z;
   				// intersects[i].object.position.y = camera.position.y;
           // add to camera to simulate picking up
-  				camera.add(getAncestor(intersects[i].object));
-  				getAncestor(intersects[i].object).position.set(2,-1,-2);
+  				camera.add(getAncestor(intersects[0].object));
+  				getAncestor(intersects[0].object).position.set(2,-1,-2);
 				  pickedUpObject = getAncestor(intersects[0].object);
-				  console.log(pickedUpObject.name);
+				  console.log(pickedUpObject.position);
 			    pickedUp = true;
-        }
+        //}
         //console.log('intersect object position' + intersects[i].object.position);
 			}
 
@@ -859,7 +859,7 @@ function keyDrop (){
 	  var niceKey = new THREE.Object3D();
 	  niceKey = gltf.scene;
 	  niceKey.scale.set(0.01, 0.01, 0.01);
-	  niceKey.position.set(6, -3, 1);
+	  niceKey.position.set(-6, -1.5, -15);
 	  scene.add(niceKey);
 	  niceKey.name = 'niceKey';
 	  interactObjs.push(niceKey);
